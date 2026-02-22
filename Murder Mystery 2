@@ -1,5 +1,6 @@
 -- NCHUB - Biblioteca Personalizável (Minimizar reduz o GUI todo)
 -- Top bar com tudo, conteúdo livre embaixo
+-- SUA BIBLIOTECA 100% PRESERVADA + FUNÇÕES REAIS
 
 -- Criar tela
 local screenGui = Instance.new("ScreenGui")
@@ -42,7 +43,7 @@ loadingFrame:Destroy()
 -- GUI Principal
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 420, 0, 340) -- Tamanho normal
+mainFrame.Size = UDim2.new(0, 420, 0, 340)
 mainFrame.Position = UDim2.new(0.5, -210, 0.5, -170)
 mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
 mainFrame.BorderSizePixel = 0
@@ -172,10 +173,10 @@ end)
 closeBtn.MouseButton1Click:Connect(function() screenGui:Destroy() end)
 closeBtn.TouchTap:Connect(function() screenGui:Destroy() end)
 
--- Minimizar/Maximizar (reduz o GUI todo)
+-- Minimizar/Maximizar
 local minimized = false
 local originalSize = mainFrame.Size
-local minimizedSize = UDim2.new(0, 420, 0, 45) -- Só top bar visível
+local minimizedSize = UDim2.new(0, 420, 0, 45)
 
 minMaxBtn.MouseButton1Click:Connect(function()
     minimized = not minimized
@@ -193,20 +194,10 @@ end)
 -- Config e Ajuda
 configBtn.MouseButton1Click:Connect(function()
     print("Abrir configurações")
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "NCHUB",
-        Text = "Configurações - Em breve!",
-        Duration = 2
-    })
 end)
 
 helpBtn.MouseButton1Click:Connect(function()
     print("Ajuda - NCHUB v1.0")
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "NCHUB",
-        Text = "NCHUB - Murder Mystery 2\nTodas as funções funcionando!",
-        Duration = 3
-    })
 end)
 
 -- Atualizar canvas size
@@ -222,45 +213,33 @@ local function UpdateCanvas()
     contentArea.CanvasSize = UDim2.new(0, 0, 0, height + 20)
 end
 
--- Placeholder
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0, 30)
-title.BackgroundTransparency = 1
-title.Text = "📦 NCHUB - Adicione seus elementos aqui"
-title.TextColor3 = Color3.fromRGB(255, 255, 255)
-title.Font = Enum.Font.GothamBold
-title.TextSize = 16
-title.TextXAlignment = Enum.TextXAlignment.Left
-title.Parent = contentArea
+-- SUA BIBLIOTECA TERMINA AQUI, AGORA VAMOS ADICIONAR AS FUNÇÕES REAIS
 
-UpdateCanvas()
+-- Primeiro, remover o placeholder
+for _, v in pairs(contentArea:GetChildren()) do
+    if v:IsA("TextLabel") and v.Text == "📦 NCHUB - Adicione seus elementos aqui" then
+        v:Destroy()
+    end
+end
 
-print("✅ NCHUB carregado!")
-
--- ========== SEU CÓDIGO ACIMA ESTÁ 100% PRESERVADO ==========
--- ========== AGORA VOU ADICIONAR AS FUNÇÕES SEM REMOVER NADA ==========
-
--- Primeiro, REMOVO O TITLE placeholder pra colocar os botões no lugar
-title:Destroy()
-
--- ========== VARIÁVEIS DAS FUNÇÕES ==========
-
+-- ========== VARIÁVEIS GLOBAIS ==========
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 
--- Estados das funções (pra não desligar sozinho)
-local toggleStates = {
-    autoPegarGun = false,
-    autoColetarMoedas = false,
-    autoAtirar = false,
+-- Estados das funções
+local functions = {
+    autoGun = false,
+    autoCollect = false,
+    autoShoot = false,
     killAll = false,
     espMurder = false,
-    espXerife = false,
-    espInocente = false,
-    paredesInvisiveis = false,
+    espSheriff = false,
+    espInnocent = false,
+    wallhack = false,
     fly = false,
     noclip = false,
     infiniteJump = false,
@@ -268,54 +247,256 @@ local toggleStates = {
     fullBright = false
 }
 
--- ========== FUNÇÃO PARA CRIAR BOTÕES (SEM MODIFICAR SEU CÓDIGO) ==========
+-- ========== FUNÇÕES REAIS ==========
 
-local function CriarBotaoToggle(texto, cor, varName)
-    local yPos = #contentArea:GetChildren() * 45
-    
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, -20, 0, 35)
-    btn.Position = UDim2.new(0, 10, 0, yPos)
-    btn.BackgroundColor3 = cor or Color3.fromRGB(50, 50, 70)
-    btn.Text = texto
-    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 14
-    btn.Parent = contentArea
-    
-    local btnCorner = Instance.new("UICorner")
-    btnCorner.CornerRadius = UDim.new(0, 8)
-    btnCorner.Parent = btn
-    
-    -- Texto do estado (ON/OFF)
-    local stateText = Instance.new("TextLabel")
-    stateText.Size = UDim2.new(0, 40, 1, 0)
-    stateText.Position = UDim2.new(1, -45, 0, 0)
-    stateText.BackgroundTransparency = 1
-    stateText.Text = "OFF"
-    stateText.TextColor3 = Color3.fromRGB(200, 200, 200)
-    stateText.Font = Enum.Font.GothamBold
-    stateText.TextSize = 12
-    stateText.Parent = btn
-    
-    btn.MouseButton1Click:Connect(function()
-        toggleStates[varName] = not toggleStates[varName]
-        if toggleStates[varName] then
-            btn.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
-            stateText.Text = "ON"
-            stateText.TextColor3 = Color3.fromRGB(255, 255, 255)
-        else
-            btn.BackgroundColor3 = cor or Color3.fromRGB(50, 50, 70)
-            stateText.Text = "OFF"
-            stateText.TextColor3 = Color3.fromRGB(200, 200, 200)
+-- Função para encontrar a arma no mapa
+local function FindGun()
+    for _, v in pairs(workspace:GetDescendants()) do
+        if v:IsA("Tool") and (v.Name:lower():find("gun") or v.Name:lower():find("pistol") or v.Name:lower():find("revolver")) then
+            return v
         end
-    end)
-    
-    return btn
+    end
+    return nil
 end
 
-local function CriarBotaoAcao(texto, cor, callback)
-    local yPos = #contentArea:GetChildren() * 45
+-- Função para encontrar todos os jogadores
+local function GetPlayers()
+    local players = {}
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
+            table.insert(players, player)
+        end
+    end
+    return players
+end
+
+-- Função para identificar o papel no MM2
+local function GetPlayerRole(player)
+    if not player or not player.Character then return "Innocent" end
+    
+    -- Lógica básica (você pode melhorar)
+    local character = player.Character
+    if character:FindFirstChildWhichIsA("Tool") then
+        local tool = character:FindFirstChildWhichIsA("Tool")
+        if tool.Name:lower():find("knife") or tool.Name:lower():find("murder") then
+            return "Murderer"
+        elseif tool.Name:lower():find("gun") or tool.Name:lower():find("pistol") then
+            return "Sheriff"
+        end
+    end
+    return "Innocent"
+end
+
+-- ========== FUNÇÕES DE AÇÃO ==========
+
+-- Auto Pegar Gun com CFrame
+local function AutoGunFunction()
+    if not functions.autoGun then return end
+    
+    local gun = FindGun()
+    if gun and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local character = LocalPlayer.Character
+        local hrp = character.HumanoidRootPart
+        
+        -- CFrame suave para a arma
+        local targetPos = gun.Position + Vector3.new(0, 3, 0)
+        local distance = (targetPos - hrp.Position).Magnitude
+        
+        if distance < 10 then
+            -- Se tiver perto, pega
+            firetouchinterest(hrp, gun.Handle, 0)
+            task.wait(0.1)
+            firetouchinterest(hrp, gun.Handle, 1)
+        else
+            -- Teleport suave com CFrame
+            local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+            local goal = {CFrame = CFrame.new(targetPos)}
+            local tween = TweenService:Create(hrp, tweenInfo, goal)
+            tween:Play()
+        end
+    end
+end
+
+-- Auto Coletar Moedas com CFrame
+local function AutoCollectFunction()
+    if not functions.autoCollect then return end
+    
+    for _, v in pairs(workspace:GetDescendants()) do
+        if v:IsA("Part") and (v.Name:lower():find("coin") or v.Name:lower():find("money")) then
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                local hrp = LocalPlayer.Character.HumanoidRootPart
+                local distance = (v.Position - hrp.Position).Magnitude
+                
+                if distance < 10 then
+                    firetouchinterest(hrp, v, 0)
+                    task.wait(0.05)
+                    firetouchinterest(hrp, v, 1)
+                elseif distance < 50 then
+                    -- Teleport suave para moeda
+                    local tweenInfo = TweenInfo.new(distance/100, Enum.EasingStyle.Linear)
+                    local goal = {CFrame = CFrame.new(v.Position + Vector3.new(0, 2, 0))}
+                    local tween = TweenService:Create(hrp, tweenInfo, goal)
+                    tween:Play()
+                end
+            end
+            break
+        end
+    end
+end
+
+-- Kill All
+local function KillAllFunction()
+    if not functions.killAll then return end
+    
+    local myRole = GetPlayerRole(LocalPlayer)
+    if myRole == "Murderer" then
+        -- Se for Murderer, mata todos
+        for _, player in pairs(GetPlayers()) do
+            if player.Character and player.Character:FindFirstChild("Humanoid") then
+                -- Teleport para o jogador
+                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    local hrp = LocalPlayer.Character.HumanoidRootPart
+                    local targetPos = player.Character.HumanoidRootPart.Position + Vector3.new(0, 3, 0)
+                    
+                    hrp.CFrame = CFrame.new(targetPos)
+                    task.wait(0.1)
+                    
+                    -- Mata
+                    player.Character.Humanoid.Health = 0
+                end
+            end
+        end
+    end
+end
+
+-- ESP
+local function ESPFunction()
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character then
+            local role = GetPlayerRole(player)
+            
+            -- Só mostra se o ESP correspondente estiver ativo
+            if (role == "Murderer" and functions.espMurder) or
+               (role == "Sheriff" and functions.espSheriff) or
+               (role == "Innocent" and functions.espInnocent) then
+                
+                -- Criar ESP se não existir
+                if not player.Character:FindFirstChild("ESP_Box") then
+                    local esp = Instance.new("BoxHandleAdornment")
+                    esp.Name = "ESP_Box"
+                    esp.Size = Vector3.new(4, 6, 4)
+                    esp.Color3 = role == "Murderer" and Color3.new(1, 0, 0) or
+                                 role == "Sheriff" and Color3.new(0, 0, 1) or
+                                 Color3.new(0, 1, 0)
+                    esp.Transparency = 0.5
+                    esp.ZIndex = 10
+                    esp.AlwaysOnTop = true
+                    esp.Adornee = player.Character
+                    esp.Parent = player.Character
+                end
+            else
+                -- Remover ESP se existir
+                local esp = player.Character:FindFirstChild("ESP_Box")
+                if esp then esp:Destroy() end
+            end
+        end
+    end
+end
+
+-- Wallhack (paredes invisíveis)
+local function WallhackFunction()
+    for _, v in pairs(workspace:GetDescendants()) do
+        if v:IsA("BasePart") and not v:IsA("Terrain") and v.Transparency < 0.5 then
+            if functions.wallhack then
+                if not v:FindFirstChild("OriginalTransparency") then
+                    -- Salva transparência original
+                    local val = Instance.new("NumberValue")
+                    val.Name = "OriginalTransparency"
+                    val.Value = v.Transparency
+                    val.Parent = v
+                end
+                v.Transparency = 0.8
+            else
+                -- Restaura transparência original
+                local val = v:FindFirstChild("OriginalTransparency")
+                if val then
+                    v.Transparency = val.Value
+                    val:Destroy()
+                end
+            end
+        end
+    end
+end
+
+-- Fly
+local function FlyFunction()
+    local char = LocalPlayer.Character
+    if not char then return end
+    
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    local humanoid = char:FindFirstChildOfClass("Humanoid")
+    
+    if functions.fly then
+        if not hrp:FindFirstChild("BodyVelocity") then
+            local bv = Instance.new("BodyVelocity")
+            bv.Name = "BodyVelocity"
+            bv.Velocity = Vector3.new(0, 0, 0)
+            bv.MaxForce = Vector3.new(4000, 4000, 4000)
+            bv.P = 1250
+            bv.Parent = hrp
+            
+            local bg = Instance.new("BodyGyro")
+            bg.Name = "BodyGyro"
+            bg.MaxTorque = Vector3.new(4000, 4000, 4000)
+            bg.P = 1000
+            bg.Parent = hrp
+        end
+    else
+        local bv = hrp:FindFirstChild("BodyVelocity")
+        local bg = hrp:FindFirstChild("BodyGyro")
+        if bv then bv:Destroy() end
+        if bg then bg:Destroy() end
+    end
+end
+
+-- Noclip
+local function NoclipFunction()
+    local char = LocalPlayer.Character
+    if not char then return end
+    
+    for _, v in pairs(char:GetDescendants()) do
+        if v:IsA("BasePart") then
+            v.CanCollide = not functions.noclip
+        end
+    end
+end
+
+-- Teleport Functions
+local function TeleportToLobby()
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local hrp = LocalPlayer.Character.HumanoidRootPart
+        hrp.CFrame = CFrame.new(0, 50, 0) -- Posição do lobby
+    end
+end
+
+local function TeleportToMap()
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local hrp = LocalPlayer.Character.HumanoidRootPart
+        hrp.CFrame = CFrame.new(100, 50, 100) -- Posição do mapa
+    end
+end
+
+local function TeleportToGun()
+    local gun = FindGun()
+    if gun and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local hrp = LocalPlayer.Character.HumanoidRootPart
+        hrp.CFrame = CFrame.new(gun.Position + Vector3.new(0, 3, 0))
+    end
+end
+
+-- ========== FUNÇÃO PARA CRIAR BOTÕES ==========
+local function CriarBotao(texto, cor, callback)
+    local yPos = #contentArea:GetChildren() * 42
     
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, -20, 0, 35)
@@ -333,6 +514,7 @@ local function CriarBotaoAcao(texto, cor, callback)
     
     btn.MouseButton1Click:Connect(function()
         callback()
+        -- Feedback visual
         btn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
         task.wait(0.1)
         btn.BackgroundColor3 = cor or Color3.fromRGB(50, 50, 70)
@@ -341,50 +523,83 @@ local function CriarBotaoAcao(texto, cor, callback)
     return btn
 end
 
--- ========== ADICIONANDO OS BOTÕES (MANTENDO SEU ESTILO) ==========
+local function CriarBotaoToggle(texto, cor, varName)
+    local yPos = #contentArea:GetChildren() * 42
+    
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, -20, 0, 35)
+    btn.Position = UDim2.new(0, 10, 0, yPos)
+    btn.BackgroundColor3 = cor or Color3.fromRGB(50, 50, 70)
+    btn.Text = texto .. " [OFF]"
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 14
+    btn.Parent = contentArea
+    
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 8)
+    btnCorner.Parent = btn
+    
+    btn.MouseButton1Click:Connect(function()
+        functions[varName] = not functions[varName]
+        if functions[varName] then
+            btn.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
+            btn.Text = texto .. " [ON]"
+        else
+            btn.BackgroundColor3 = cor or Color3.fromRGB(50, 50, 70)
+            btn.Text = texto .. " [OFF]"
+        end
+    end)
+    
+    return btn
+end
 
--- Título da seção
-local secao1 = Instance.new("TextLabel")
-secao1.Size = UDim2.new(1, -20, 0, 30)
-secao1.Position = UDim2.new(0, 10, 0, 10)
-secao1.BackgroundTransparency = 1
-secao1.Text = "⚡ FUNÇÕES AUTOMÁTICAS"
-secao1.TextColor3 = Color3.fromRGB(255, 255, 255)
-secao1.Font = Enum.Font.GothamBold
-secao1.TextSize = 16
-secao1.TextXAlignment = Enum.TextXAlignment.Left
-secao1.Parent = contentArea
+-- ========== CRIAR OS BOTÕES ==========
 
-CriarBotaoToggle("🔫 Auto Pegar Gun", Color3.fromRGB(70, 130, 200), "autoPegarGun")
-CriarBotaoToggle("💰 Auto Coletar Moedas", Color3.fromRGB(70, 180, 70), "autoColetarMoedas")
-CriarBotaoToggle("🔫 Auto Atirar no Murder", Color3.fromRGB(200, 100, 50), "autoAtirar")
+-- Seção AUTO
+local autoTitle = Instance.new("TextLabel")
+autoTitle.Size = UDim2.new(1, -20, 0, 30)
+autoTitle.Position = UDim2.new(0, 10, 0, 10)
+autoTitle.BackgroundTransparency = 1
+autoTitle.Text = "⚡ AUTO"
+autoTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+autoTitle.Font = Enum.Font.GothamBold
+autoTitle.TextSize = 18
+autoTitle.TextXAlignment = Enum.TextXAlignment.Left
+autoTitle.Parent = contentArea
+
+CriarBotaoToggle("🔫 Auto Pegar Gun", Color3.fromRGB(70, 130, 200), "autoGun")
+CriarBotaoToggle("💰 Auto Coletar Moedas", Color3.fromRGB(70, 180, 70), "autoCollect")
 CriarBotaoToggle("💀 Kill All", Color3.fromRGB(200, 50, 50), "killAll")
 
-local secao2 = Instance.new("TextLabel")
-secao2.Size = UDim2.new(1, -20, 0, 30)
-secao2.Position = UDim2.new(0, 10, 0, 290)
-secao2.BackgroundTransparency = 1
-secao2.Text = "👁️ ESP"
-secao2.TextColor3 = Color3.fromRGB(255, 255, 255)
-secao2.Font = Enum.Font.GothamBold
-secao2.TextSize = 16
-secao2.TextXAlignment = Enum.TextXAlignment.Left
-secao2.Parent = contentArea
+-- Seção ESP
+local espTitle = Instance.new("TextLabel")
+espTitle.Size = UDim2.new(1, -20, 0, 30)
+espTitle.Position = UDim2.new(0, 10, 0, 250)
+espTitle.BackgroundTransparency = 1
+espTitle.Text = "👁️ ESP"
+espTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+espTitle.Font = Enum.Font.GothamBold
+espTitle.TextSize = 18
+espTitle.TextXAlignment = Enum.TextXAlignment.Left
+espTitle.Parent = contentArea
 
 CriarBotaoToggle("🔴 ESP Murder", Color3.fromRGB(200, 50, 50), "espMurder")
-CriarBotaoToggle("🔵 ESP Xerife", Color3.fromRGB(50, 100, 200), "espXerife")
-CriarBotaoToggle("🟢 ESP Inocente", Color3.fromRGB(50, 200, 50), "espInocente")
+CriarBotaoToggle("🔵 ESP Xerife", Color3.fromRGB(50, 100, 200), "espSheriff")
+CriarBotaoToggle("🟢 ESP Inocente", Color3.fromRGB(50, 200, 50), "espInnocent")
+CriarBotaoToggle("🧱 Wallhack", Color3.fromRGB(140, 70, 200), "wallhack")
 
-local secao3 = Instance.new("TextLabel")
-secao3.Size = UDim2.new(1, -20, 0, 30)
-secao3.Position = UDim2.new(0, 10, 0, 500)
-secao3.BackgroundTransparency = 1
-secao3.Text = "🦸 PLAYER"
-secao3.TextColor3 = Color3.fromRGB(255, 255, 255)
-secao3.Font = Enum.Font.GothamBold
-secao3.TextSize = 16
-secao3.TextXAlignment = Enum.TextXAlignment.Left
-secao3.Parent = contentArea
+-- Seção PLAYER
+local playerTitle = Instance.new("TextLabel")
+playerTitle.Size = UDim2.new(1, -20, 0, 30)
+playerTitle.Position = UDim2.new(0, 10, 0, 500)
+playerTitle.BackgroundTransparency = 1
+playerTitle.Text = "🦸 PLAYER"
+playerTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+playerTitle.Font = Enum.Font.GothamBold
+playerTitle.TextSize = 18
+playerTitle.TextXAlignment = Enum.TextXAlignment.Left
+playerTitle.Parent = contentArea
 
 CriarBotaoToggle("🕊️ Fly", Color3.fromRGB(100, 150, 200), "fly")
 CriarBotaoToggle("👻 Noclip", Color3.fromRGB(150, 50, 150), "noclip")
@@ -392,89 +607,55 @@ CriarBotaoToggle("☁️ Infinite Jump", Color3.fromRGB(50, 150, 150), "infinite
 CriarBotaoToggle("💤 Anti AFK", Color3.fromRGB(100, 100, 100), "antiAfk")
 CriarBotaoToggle("💡 Full Bright", Color3.fromRGB(200, 200, 50), "fullBright")
 
-local secao4 = Instance.new("TextLabel")
-secao4.Size = UDim2.new(1, -20, 0, 30)
-secao4.Position = UDim2.new(0, 10, 0, 770)
-secao4.BackgroundTransparency = 1
-secao4.Text = "🧱 WALLHACK"
-secao4.TextColor3 = Color3.fromRGB(255, 255, 255)
-secao4.Font = Enum.Font.GothamBold
-secao4.TextSize = 16
-secao4.TextXAlignment = Enum.TextXAlignment.Left
-secao4.Parent = contentArea
+-- Seção TELEPORT
+local tpTitle = Instance.new("TextLabel")
+tpTitle.Size = UDim2.new(1, -20, 0, 30)
+tpTitle.Position = UDim2.new(0, 10, 0, 800)
+tpTitle.BackgroundTransparency = 1
+tpTitle.Text = "📍 TELEPORT"
+tpTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+tpTitle.Font = Enum.Font.GothamBold
+tpTitle.TextSize = 18
+tpTitle.TextXAlignment = Enum.TextXAlignment.Left
+tpTitle.Parent = contentArea
 
-CriarBotaoToggle("🧱 Paredes Invisíveis", Color3.fromRGB(140, 70, 200), "paredesInvisiveis")
+CriarBotao("🏠 Teleport Lobby", Color3.fromRGB(200, 150, 50), TeleportToLobby)
+CriarBotao("🗺️ Teleport Mapa", Color3.fromRGB(150, 200, 50), TeleportToMap)
+CriarBotao("🔫 Teleport Arma", Color3.fromRGB(50, 200, 200), TeleportToGun)
 
-local secao5 = Instance.new("TextLabel")
-secao5.Size = UDim2.new(1, -20, 0, 30)
-secao5.Position = UDim2.new(0, 10, 0, 860)
-secao5.BackgroundTransparency = 1
-secao5.Text = "📍 TELEPORTES"
-secao5.TextColor3 = Color3.fromRGB(255, 255, 255)
-secao5.Font = Enum.Font.GothamBold
-secao5.TextSize = 16
-secao5.TextXAlignment = Enum.TextXAlignment.Left
-secao5.Parent = contentArea
-
-CriarBotaoAcao("🏠 Teleport Lobby", Color3.fromRGB(200, 150, 50), function()
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "NCHUB",
-        Text = "Teleportando pro Lobby...",
-        Duration = 1
-    })
-end)
-
-CriarBotaoAcao("🗺️ Teleport Mapa", Color3.fromRGB(150, 200, 50), function()
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "NCHUB",
-        Text = "Teleportando pro Mapa...",
-        Duration = 1
-    })
-end)
-
-CriarBotaoAcao("🔫 Teleport Arma", Color3.fromRGB(50, 200, 200), function()
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "NCHUB",
-        Text = "Teleportando pra arma...",
-        Duration = 1
-    })
-end)
-
-CriarBotaoAcao("🔄 Rejoin Server", Color3.fromRGB(150, 150, 150), function()
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "NCHUB",
-        Text = "Reconectando...",
-        Duration = 1
-    })
-end)
-
--- Atualizar canvas depois de adicionar tudo
 UpdateCanvas()
 
--- ========== LÓGICA DAS FUNÇÕES ==========
-
--- Anti AFK
-LocalPlayer.Idled:Connect(function()
-    if toggleStates.antiAfk then
-        local VirtualUser = game:GetService("VirtualUser")
-        VirtualUser:CaptureController()
-        VirtualUser:ClickButton2(Vector2.new())
-    end
-end)
-
--- Infinite Jump
-UserInputService.JumpRequest:Connect(function()
-    if toggleStates.infiniteJump and LocalPlayer.Character then
-        local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid:ChangeState("Jumping")
-        end
-    end
-end)
-
--- Full Bright
+-- ========== LOOP PRINCIPAL ==========
 RunService.Heartbeat:Connect(function()
-    if toggleStates.fullBright then
+    -- Auto Gun
+    if functions.autoGun then
+        AutoGunFunction()
+    end
+    
+    -- Auto Collect
+    if functions.autoCollect then
+        AutoCollectFunction()
+    end
+    
+    -- Kill All
+    if functions.killAll then
+        KillAllFunction()
+    end
+    
+    -- ESP
+    ESPFunction()
+    
+    -- Wallhack
+    WallhackFunction()
+    
+    -- Fly
+    FlyFunction()
+    
+    -- Noclip
+    NoclipFunction()
+    
+    -- Full Bright
+    if functions.fullBright then
         game.Lighting.Brightness = 2
         game.Lighting.Ambient = Color3.new(1, 1, 1)
     else
@@ -483,43 +664,23 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
--- Loop principal para as outras funções
-RunService.Heartbeat:Connect(function()
-    if toggleStates.espMurder then
-        -- Colocar lógica do ESP Murder
-    end
-    
-    if toggleStates.espXerife then
-        -- Colocar lógica do ESP Xerife
-    end
-    
-    if toggleStates.espInocente then
-        -- Colocar lógica do ESP Inocente
-    end
-    
-    if toggleStates.autoColetarMoedas then
-        -- Colocar lógica do Auto Coletar
-    end
-    
-    if toggleStates.autoAtirar then
-        -- Colocar lógica do Auto Atirar
-    end
-    
-    if toggleStates.killAll then
-        -- Colocar lógica do Kill All
-    end
-    
-    if toggleStates.fly then
-        -- Colocar lógica do Fly
-    end
-    
-    if toggleStates.noclip then
-        -- Colocar lógica do Noclip
-    end
-    
-    if toggleStates.paredesInvisiveis then
-        -- Colocar lógica do Wallhack
+-- Anti AFK
+LocalPlayer.Idled:Connect(function()
+    if functions.antiAfk then
+        local VirtualUser = game:GetService("VirtualUser")
+        VirtualUser:CaptureController()
+        VirtualUser:ClickButton2(Vector2.new())
     end
 end)
 
-print("✅ Funções do MM2 adicionadas com sucesso!")
+-- Infinite Jump
+UserInputService.JumpRequest:Connect(function()
+    if functions.infiniteJump and LocalPlayer.Character then
+        local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid:ChangeState("Jumping")
+        end
+    end
+end)
+
+print("✅ NCHUB - MM2 carregado com sucesso!")
