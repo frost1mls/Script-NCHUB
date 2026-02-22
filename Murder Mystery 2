@@ -43,8 +43,8 @@ loadingFrame:Destroy()
 -- GUI Principal
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 480, 0, 620)  -- aumentei pra caber tudo sem cortar
-mainFrame.Position = UDim2.new(0.5, -240, 0.5, -310)
+mainFrame.Size = UDim2.new(0, 420, 0, 340)
+mainFrame.Position = UDim2.new(0.5, -210, 0.5, -170)
 mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
 mainFrame.BorderSizePixel = 0
 mainFrame.ClipsDescendants = true
@@ -176,7 +176,7 @@ closeBtn.TouchTap:Connect(function() screenGui:Destroy() end)
 -- Minimizar/Maximizar
 local minimized = false
 local originalSize = mainFrame.Size
-local minimizedSize = UDim2.new(0, 480, 0, 45)
+local minimizedSize = UDim2.new(0, 420, 0, 45)
 
 minMaxBtn.MouseButton1Click:Connect(function()
     minimized = not minimized
@@ -213,24 +213,11 @@ local function UpdateCanvas()
     contentArea.CanvasSize = UDim2.new(0, 0, 0, height + 20)
 end
 
--- Adiciona UIListLayout pra scroll funcionar melhor (sem bagunçar teu código)
-local uiList = Instance.new("UIListLayout")
-uiList.SortOrder = Enum.SortOrder.LayoutOrder
-uiList.Padding = UDim.new(0, 8)
-uiList.Parent = contentArea
-
--- Atualiza UpdateCanvas pra usar AbsoluteContentSize
-local oldUpdate = UpdateCanvas
-UpdateCanvas = function()
-    task.wait(0.1)
-    contentArea.CanvasSize = UDim2.new(0, 0, 0, uiList.AbsoluteContentSize.Y + 60)
-end
-
 -- SUA BIBLIOTECA TERMINA AQUI, AGORA VAMOS ADICIONAR AS FUNÇÕES REAIS
 
 -- Primeiro, remover o placeholder
 for _, v in pairs(contentArea:GetChildren()) do
-    if v:IsA("TextLabel") and v.Text:find("Adicione") then
+    if v:IsA("TextLabel") and v.Text == "📦 NCHUB - Adicione seus elementos aqui" then
         v:Destroy()
     end
 end
@@ -283,139 +270,266 @@ local function GetPlayers()
     return players
 end
 
--- Função para identificar o papel no MM2 (corrigida)
+-- Função para identificar o papel no MM2
 local function GetPlayerRole(player)
     if not player or not player.Character then return "Innocent" end
     
-    local char = player.Character
-    local backpack = player.Backpack
-    
-    if char:FindFirstChild("Knife") or backpack:FindFirstChild("Knife") then
-        return "Murderer"
-    end
-    if char:FindFirstChild("Gun") or backpack:FindFirstChild("Gun") then
-        return "Sheriff"
+    -- Lógica básica (você pode melhorar)
+    local character = player.Character
+    if character:FindFirstChildWhichIsA("Tool") then
+        local tool = character:FindFirstChildWhichIsA("Tool")
+        if tool.Name:lower():find("knife") or tool.Name:lower():find("murder") then
+            return "Murderer"
+        elseif tool.Name:lower():find("gun") or tool.Name:lower():find("pistol") then
+            return "Sheriff"
+        end
     end
     return "Innocent"
 end
 
 -- ========== FUNÇÕES DE AÇÃO ==========
 
--- Auto Pegar Gun com CFrame (simples e direto)
+-- Auto Pegar Gun com CFrame
 local function AutoGunFunction()
     if not functions.autoGun then return end
     
     local gun = FindGun()
     if gun and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        local hrp = LocalPlayer.Character.HumanoidRootPart
-        local targetPos = gun.Handle.Position + Vector3.new(0, 3, 0)
+        local character = LocalPlayer.Character
+        local hrp = character.HumanoidRootPart
         
-        hrp.CFrame = CFrame.new(targetPos)
-        task.wait(0.15)
-        firetouchinterest(hrp, gun.Handle, 0)
-        task.wait(0.05)
-        firetouchinterest(hrp, gun.Handle, 1)
+        -- CFrame suave para a arma
+        local targetPos = gun.Position + Vector3.new(0, 3, 0)
+        local distance = (targetPos - hrp.Position).Magnitude
+        
+        if distance < 10 then
+            -- Se tiver perto, pega
+            firetouchinterest(hrp, gun.Handle, 0)
+            task.wait(0.1)
+            firetouchinterest(hrp, gun.Handle, 1)
+        else
+            -- Teleport suave com CFrame
+            local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+            local goal = {CFrame = CFrame.new(targetPos)}
+            local tween = TweenService:Create(hrp, tweenInfo, goal)
+            tween:Play()
+        end
     end
 end
 
--- Auto Coletar Moedas (corrigido, coleta todas sem break)
+-- Auto Coletar Moedas com CFrame
 local function AutoCollectFunction()
     if not functions.autoCollect then return end
     
     for _, v in pairs(workspace:GetDescendants()) do
-        if v:IsA("BasePart") and (v.Name:lower():find("coin") or v.Name:lower():find("candy") or v.Name:lower():find("money")) then
+        if v:IsA("Part") and (v.Name:lower():find("coin") or v.Name:lower():find("money")) then
             if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
                 local hrp = LocalPlayer.Character.HumanoidRootPart
-                firetouchinterest(hrp, v, 0)
-                task.wait(0.02)
-                firetouchinterest(hrp, v, 1)
+                local distance = (v.Position - hrp.Position).Magnitude
+                
+                if distance < 10 then
+                    firetouchinterest(hrp, v, 0)
+                    task.wait(0.05)
+                    firetouchinterest(hrp, v, 1)
+                elseif distance < 50 then
+                    -- Teleport suave para moeda
+                    local tweenInfo = TweenInfo.new(distance/100, Enum.EasingStyle.Linear)
+                    local goal = {CFrame = CFrame.new(v.Position + Vector3.new(0, 2, 0))}
+                    local tween = TweenService:Create(hrp, tweenInfo, goal)
+                    tween:Play()
+                end
             end
+            break
         end
     end
 end
 
--- Kill All (só se Murderer)
+-- Kill All
 local function KillAllFunction()
     if not functions.killAll then return end
     
-    if GetPlayerRole(LocalPlayer) == "Murderer" then
+    local myRole = GetPlayerRole(LocalPlayer)
+    if myRole == "Murderer" then
+        -- Se for Murderer, mata todos
         for _, player in pairs(GetPlayers()) do
             if player.Character and player.Character:FindFirstChild("Humanoid") then
-                player.Character.Humanoid.Health = 0
+                -- Teleport para o jogador
+                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    local hrp = LocalPlayer.Character.HumanoidRootPart
+                    local targetPos = player.Character.HumanoidRootPart.Position + Vector3.new(0, 3, 0)
+                    
+                    hrp.CFrame = CFrame.new(targetPos)
+                    task.wait(0.1)
+                    
+                    -- Mata
+                    player.Character.Humanoid.Health = 0
+                end
             end
         end
     end
 end
 
--- ESP com Highlight (corrigido)
-local highlights = {}
-
+-- ESP
 local function ESPFunction()
     for _, player in pairs(Players:GetPlayers()) do
-        if player == LocalPlayer or not player.Character then continue end
-        
-        local role = GetPlayerRole(player)
-        local shouldShow = (role == "Murderer" and functions.espMurder) or
-                           (role == "Sheriff" and functions.espSheriff) or
-                           (role == "Innocent" and functions.espInnocent)
-        
-        if shouldShow then
-            if not highlights[player] then
-                local hl = Instance.new("Highlight")
-                hl.FillTransparency = 0.4
-                hl.OutlineTransparency = 0
+        if player ~= LocalPlayer and player.Character then
+            local role = GetPlayerRole(player)
+            
+            -- Só mostra se o ESP correspondente estiver ativo
+            if (role == "Murderer" and functions.espMurder) or
+               (role == "Sheriff" and functions.espSheriff) or
+               (role == "Innocent" and functions.espInnocent) then
                 
-                if role == "Murderer" then
-                    hl.FillColor = Color3.fromRGB(255, 0, 0)
-                    hl.OutlineColor = Color3.fromRGB(255, 255, 0)
-                elseif role == "Sheriff" then
-                    hl.FillColor = Color3.fromRGB(0, 100, 255)
-                    hl.OutlineColor = Color3.fromRGB(255, 255, 255)
-                else
-                    hl.FillColor = Color3.fromRGB(0, 255, 0)
-                    hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+                -- Criar ESP se não existir
+                if not player.Character:FindFirstChild("ESP_Box") then
+                    local esp = Instance.new("BoxHandleAdornment")
+                    esp.Name = "ESP_Box"
+                    esp.Size = Vector3.new(4, 6, 4)
+                    esp.Color3 = role == "Murderer" and Color3.new(1, 0, 0) or
+                                 role == "Sheriff" and Color3.new(0, 0, 1) or
+                                 Color3.new(0, 1, 0)
+                    esp.Transparency = 0.5
+                    esp.ZIndex = 10
+                    esp.AlwaysOnTop = true
+                    esp.Adornee = player.Character
+                    esp.Parent = player.Character
                 end
-                
-                hl.Parent = player.Character
-                highlights[player] = hl
-            end
-        else
-            if highlights[player] then
-                highlights[player]:Destroy()
-                highlights[player] = nil
+            else
+                -- Remover ESP se existir
+                local esp = player.Character:FindFirstChild("ESP_Box")
+                if esp then esp:Destroy() end
             end
         end
     end
 end
 
--- Wallhack corrigido (volta ao normal)
-local savedTrans = {}
-
+-- Wallhack (paredes invisíveis)
 local function WallhackFunction()
-    if functions.wallhack then
-        for _, part in pairs(workspace:GetDescendants()) do
-            if part:IsA("BasePart") and part.Transparency < 0.6 and not part:IsDescendantOf(LocalPlayer.Character) then
-                if not savedTrans[part] then
-                    savedTrans[part] = part.Transparency
+    for _, v in pairs(workspace:GetDescendants()) do
+        if v:IsA("BasePart") and not v:IsA("Terrain") and v.Transparency < 0.5 then
+            if functions.wallhack then
+                if not v:FindFirstChild("OriginalTransparency") then
+                    -- Salva transparência original
+                    local val = Instance.new("NumberValue")
+                    val.Name = "OriginalTransparency"
+                    val.Value = v.Transparency
+                    val.Parent = v
                 end
-                part.Transparency = 0.8
+                v.Transparency = 0.8
+            else
+                -- Restaura transparência original
+                local val = v:FindFirstChild("OriginalTransparency")
+                if val then
+                    v.Transparency = val.Value
+                    val:Destroy()
+                end
             end
+        end
+    end
+end
+
+-- Fly
+local function FlyFunction()
+    local char = LocalPlayer.Character
+    if not char then return end
+    
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    local humanoid = char:FindFirstChildOfClass("Humanoid")
+    
+    if functions.fly then
+        if not hrp:FindFirstChild("BodyVelocity") then
+            local bv = Instance.new("BodyVelocity")
+            bv.Name = "BodyVelocity"
+            bv.Velocity = Vector3.new(0, 0, 0)
+            bv.MaxForce = Vector3.new(4000, 4000, 4000)
+            bv.P = 1250
+            bv.Parent = hrp
+            
+            local bg = Instance.new("BodyGyro")
+            bg.Name = "BodyGyro"
+            bg.MaxTorque = Vector3.new(4000, 4000, 4000)
+            bg.P = 1000
+            bg.Parent = hrp
         end
     else
-        for part, trans in pairs(savedTrans) do
-            if part and part.Parent then
-                part.Transparency = trans
-            end
-        end
-        savedTrans = {}
+        local bv = hrp:FindFirstChild("BodyVelocity")
+        local bg = hrp:FindFirstChild("BodyGyro")
+        if bv then bv:Destroy() end
+        if bg then bg:Destroy() end
     end
 end
 
--- ========== FUNÇÃO PARA CRIAR BOTÕES TOGGLE ==========
-local function CriarBotaoToggle(texto, corOff, varName)
+-- Noclip
+local function NoclipFunction()
+    local char = LocalPlayer.Character
+    if not char then return end
+    
+    for _, v in pairs(char:GetDescendants()) do
+        if v:IsA("BasePart") then
+            v.CanCollide = not functions.noclip
+        end
+    end
+end
+
+-- Teleport Functions
+local function TeleportToLobby()
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local hrp = LocalPlayer.Character.HumanoidRootPart
+        hrp.CFrame = CFrame.new(0, 50, 0) -- Posição do lobby
+    end
+end
+
+local function TeleportToMap()
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local hrp = LocalPlayer.Character.HumanoidRootPart
+        hrp.CFrame = CFrame.new(100, 50, 100) -- Posição do mapa
+    end
+end
+
+local function TeleportToGun()
+    local gun = FindGun()
+    if gun and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local hrp = LocalPlayer.Character.HumanoidRootPart
+        hrp.CFrame = CFrame.new(gun.Position + Vector3.new(0, 3, 0))
+    end
+end
+
+-- ========== FUNÇÃO PARA CRIAR BOTÕES ==========
+local function CriarBotao(texto, cor, callback)
+    local yPos = #contentArea:GetChildren() * 42
+    
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, -20, 0, 35)
-    btn.BackgroundColor3 = corOff
+    btn.Position = UDim2.new(0, 10, 0, yPos)
+    btn.BackgroundColor3 = cor or Color3.fromRGB(50, 50, 70)
+    btn.Text = texto
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 14
+    btn.Parent = contentArea
+    
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 8)
+    btnCorner.Parent = btn
+    
+    btn.MouseButton1Click:Connect(function()
+        callback()
+        -- Feedback visual
+        btn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+        task.wait(0.1)
+        btn.BackgroundColor3 = cor or Color3.fromRGB(50, 50, 70)
+    end)
+    
+    return btn
+end
+
+local function CriarBotaoToggle(texto, cor, varName)
+    local yPos = #contentArea:GetChildren() * 42
+    
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, -20, 0, 35)
+    btn.Position = UDim2.new(0, 10, 0, yPos)
+    btn.BackgroundColor3 = cor or Color3.fromRGB(50, 50, 70)
     btn.Text = texto .. " [OFF]"
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     btn.Font = Enum.Font.GothamBold
@@ -432,16 +546,20 @@ local function CriarBotaoToggle(texto, corOff, varName)
             btn.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
             btn.Text = texto .. " [ON]"
         else
-            btn.BackgroundColor3 = corOff
+            btn.BackgroundColor3 = cor or Color3.fromRGB(50, 50, 70)
             btn.Text = texto .. " [OFF]"
         end
-        UpdateCanvas()
     end)
+    
+    return btn
 end
 
 -- ========== CRIAR OS BOTÕES ==========
+
+-- Seção AUTO
 local autoTitle = Instance.new("TextLabel")
 autoTitle.Size = UDim2.new(1, -20, 0, 30)
+autoTitle.Position = UDim2.new(0, 10, 0, 10)
 autoTitle.BackgroundTransparency = 1
 autoTitle.Text = "⚡ AUTO"
 autoTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -454,8 +572,10 @@ CriarBotaoToggle("🔫 Auto Pegar Gun", Color3.fromRGB(70, 130, 200), "autoGun")
 CriarBotaoToggle("💰 Auto Coletar Moedas", Color3.fromRGB(70, 180, 70), "autoCollect")
 CriarBotaoToggle("💀 Kill All", Color3.fromRGB(200, 50, 50), "killAll")
 
+-- Seção ESP
 local espTitle = Instance.new("TextLabel")
 espTitle.Size = UDim2.new(1, -20, 0, 30)
+espTitle.Position = UDim2.new(0, 10, 0, 250)
 espTitle.BackgroundTransparency = 1
 espTitle.Text = "👁️ ESP"
 espTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -469,25 +589,98 @@ CriarBotaoToggle("🔵 ESP Xerife", Color3.fromRGB(50, 100, 200), "espSheriff")
 CriarBotaoToggle("🟢 ESP Inocente", Color3.fromRGB(50, 200, 50), "espInnocent")
 CriarBotaoToggle("🧱 Wallhack", Color3.fromRGB(140, 70, 200), "wallhack")
 
+-- Seção PLAYER
+local playerTitle = Instance.new("TextLabel")
+playerTitle.Size = UDim2.new(1, -20, 0, 30)
+playerTitle.Position = UDim2.new(0, 10, 0, 500)
+playerTitle.BackgroundTransparency = 1
+playerTitle.Text = "🦸 PLAYER"
+playerTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+playerTitle.Font = Enum.Font.GothamBold
+playerTitle.TextSize = 18
+playerTitle.TextXAlignment = Enum.TextXAlignment.Left
+playerTitle.Parent = contentArea
+
+CriarBotaoToggle("🕊️ Fly", Color3.fromRGB(100, 150, 200), "fly")
+CriarBotaoToggle("👻 Noclip", Color3.fromRGB(150, 50, 150), "noclip")
+CriarBotaoToggle("☁️ Infinite Jump", Color3.fromRGB(50, 150, 150), "infiniteJump")
+CriarBotaoToggle("💤 Anti AFK", Color3.fromRGB(100, 100, 100), "antiAfk")
+CriarBotaoToggle("💡 Full Bright", Color3.fromRGB(200, 200, 50), "fullBright")
+
+-- Seção TELEPORT
+local tpTitle = Instance.new("TextLabel")
+tpTitle.Size = UDim2.new(1, -20, 0, 30)
+tpTitle.Position = UDim2.new(0, 10, 0, 800)
+tpTitle.BackgroundTransparency = 1
+tpTitle.Text = "📍 TELEPORT"
+tpTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+tpTitle.Font = Enum.Font.GothamBold
+tpTitle.TextSize = 18
+tpTitle.TextXAlignment = Enum.TextXAlignment.Left
+tpTitle.Parent = contentArea
+
+CriarBotao("🏠 Teleport Lobby", Color3.fromRGB(200, 150, 50), TeleportToLobby)
+CriarBotao("🗺️ Teleport Mapa", Color3.fromRGB(150, 200, 50), TeleportToMap)
+CriarBotao("🔫 Teleport Arma", Color3.fromRGB(50, 200, 200), TeleportToGun)
+
 UpdateCanvas()
 
--- ========== LOOP PRINCIPAL (com delay pra não travar) ==========
+-- ========== LOOP PRINCIPAL ==========
 RunService.Heartbeat:Connect(function()
-    AutoGunFunction()
-    AutoCollectFunction()
-    KillAllFunction()
+    -- Auto Gun
+    if functions.autoGun then
+        AutoGunFunction()
+    end
+    
+    -- Auto Collect
+    if functions.autoCollect then
+        AutoCollectFunction()
+    end
+    
+    -- Kill All
+    if functions.killAll then
+        KillAllFunction()
+    end
+    
+    -- ESP
     ESPFunction()
+    
+    -- Wallhack
     WallhackFunction()
     
-    task.wait(0.05)  -- evita timeout no executor
-end)
-
--- Limpeza ESP
-Players.PlayerRemoving:Connect(function(plr)
-    if highlights[plr] then
-        highlights[plr]:Destroy()
-        highlights[plr] = nil
+    -- Fly
+    FlyFunction()
+    
+    -- Noclip
+    NoclipFunction()
+    
+    -- Full Bright
+    if functions.fullBright then
+        game.Lighting.Brightness = 2
+        game.Lighting.Ambient = Color3.new(1, 1, 1)
+    else
+        game.Lighting.Brightness = 1
+        game.Lighting.Ambient = Color3.new(0.5, 0.5, 0.5)
     end
 end)
 
-print("✅ NCHUB - MM2 carregado com sucesso! Tudo corrigido.")
+-- Anti AFK
+LocalPlayer.Idled:Connect(function()
+    if functions.antiAfk then
+        local VirtualUser = game:GetService("VirtualUser")
+        VirtualUser:CaptureController()
+        VirtualUser:ClickButton2(Vector2.new())
+    end
+end)
+
+-- Infinite Jump
+UserInputService.JumpRequest:Connect(function()
+    if functions.infiniteJump and LocalPlayer.Character then
+        local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid:ChangeState("Jumping")
+        end
+    end
+end)
+
+print("✅ NCHUB - MM2 carregado com sucesso!")
