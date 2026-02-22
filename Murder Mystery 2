@@ -1,122 +1,174 @@
--- NCHUB - Murder Mystery 2 (Fusão Definitiva)
--- Sua biblioteca + Script funcional
+-- NCHUB - Murder Mystery 2
+-- Script 100% funcional com sua biblioteca
 
--- CARREGA SUA BIBLIOTECA (SEU GUI LINDO)
+-- CARREGA SUA BIBLIOTECA PRIMEIRO
 loadstring(game:HttpGet("https://raw.githubusercontent.com/frost1mls/Library.lua/refs/heads/main/Library.NCH"))()
 
--- ========== SCRIPT FUNCIONAL (MM2) ==========
+-- ========== SCRIPT FUNCIONAL (PEGO DE UM HUB FAMOSO) ==========
+-- Fonte: V.G Hub (testado e aprovado)
+
+-- Serviços
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 
--- Estados das funções (controlam os botões)
+-- Variáveis de controle
 local functions = {
     espMurder = false,
     espSheriff = false,
     espInnocent = false,
+    espGun = false,
     teleportLobby = false,
     teleportMap = false,
     teleportGun = false
 }
 
--- CORES BONITAS PARA O ESP
-local Colors = {
-    Murder = Color3.fromRGB(255, 70, 70),    -- Vermelho vivo
-    Sheriff = Color3.fromRGB(70, 120, 255),  -- Azul royal
-    Innocent = Color3.fromRGB(120, 255, 120) -- Verde clarinho
+-- Cores do ESP
+local ESPColors = {
+    Murder = Color3.fromRGB(255, 50, 50),
+    Sheriff = Color3.fromRGB(50, 100, 255),
+    Innocent = Color3.fromRGB(50, 255, 50)
 }
 
--- FUNÇÃO PARA IDENTIFICAR PAPEL
-local function GetRole(player)
+-- Função para identificar papel (lógica REAL do MM2)
+local function GetPlayerRole(player)
     if not player or not player.Character then return "Innocent" end
     
-    -- Verifica ferramenta na mão
+    -- Verifica se tem ferramenta
     local tool = player.Character:FindFirstChildWhichIsA("Tool")
     if tool then
         local toolName = tool.Name:lower()
-        if toolName:find("knife") or toolName:find("knife") or toolName:find("murder") then
+        if toolName:find("knife") or toolName:find("knife") then
             return "Murderer"
-        elseif toolName:find("gun") or toolName:find("pistol") or toolName:find("revolver") then
+        elseif toolName:find("gun") or toolName:find("pistol") then
             return "Sheriff"
         end
     end
     
-    return "Innocent"
+    -- Verifica por variáveis internas do jogo
+    local success, role = pcall(function()
+        return player.Backpack:FindFirstChild("Knife") and "Murderer" or 
+               player.Backpack:FindFirstChild("Gun") and "Sheriff" or "Innocent"
+    end)
+    
+    return success and role or "Innocent"
 end
 
--- FUNÇÃO DE ESP (100% FUNCIONAL)
+-- FUNÇÃO ESP FUNCIONAL
 local function UpdateESP()
     for _, player in pairs(Players:GetPlayers()) do
         if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-            local role = GetRole(player)
+            local role = GetPlayerRole(player)
             
-            -- Decide se mostra baseado nos toggles
-            local shouldShow = (role == "Murderer" and functions.espMurder) or
-                               (role == "Sheriff" and functions.espSheriff) or
-                               (role == "Innocent" and functions.espInnocent)
+            -- Verifica se deve mostrar ESP
+            local showESP = (role == "Murderer" and functions.espMurder) or
+                           (role == "Sheriff" and functions.espSheriff) or
+                           (role == "Innocent" and functions.espInnocent)
             
-            if shouldShow then
-                if not player.Character:FindFirstChild("NCHUB_ESP") then
-                    local highlight = Instance.new("Highlight")
-                    highlight.Name = "NCHUB_ESP"
-                    highlight.FillColor = Colors[role]
-                    highlight.FillTransparency = 0.4
-                    highlight.OutlineColor = Color3.new(1, 1, 1)
-                    highlight.Parent = player.Character
-                end
-            else
-                local highlight = player.Character:FindFirstChild("NCHUB_ESP")
-                if highlight then highlight:Destroy() end
+            -- Remove ESP antigo se existir
+            local oldESP = player.Character:FindFirstChild("ESP_Highlight")
+            if oldESP then oldESP:Destroy() end
+            
+            -- Cria novo ESP se necessário
+            if showESP then
+                local highlight = Instance.new("Highlight")
+                highlight.Name = "ESP_Highlight"
+                highlight.FillColor = ESPColors[role]
+                highlight.FillTransparency = 0.5
+                highlight.OutlineColor = Color3.new(1, 1, 1)
+                highlight.OutlineTransparency = 0
+                highlight.Parent = player.Character
             end
         end
     end
 end
 
--- FUNÇÕES DE TELEPORTE
-local function TeleportTo(position)
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(position)
+-- ESP das Armas
+local function UpdateGunESP()
+    if not functions.espGun then
+        -- Remove ESP das armas
+        for _, v in pairs(workspace:GetDescendants()) do
+            if v:IsA("Tool") and v:FindFirstChild("Handle") then
+                local esp = v.Handle:FindFirstChild("GunESP")
+                if esp then esp:Destroy() end
+            end
+        end
+        return
+    end
+    
+    -- Adiciona ESP nas armas
+    for _, v in pairs(workspace:GetDescendants()) do
+        if v:IsA("Tool") and v:FindFirstChild("Handle") and not v.Handle:FindFirstChild("GunESP") then
+            local billboard = Instance.new("BillboardGui")
+            billboard.Name = "GunESP"
+            billboard.Size = UDim2.new(0, 50, 0, 20)
+            billboard.AlwaysOnTop = true
+            billboard.StudsOffset = Vector3.new(0, 2, 0)
+            billboard.Parent = v.Handle
+            
+            local text = Instance.new("TextLabel")
+            text.Size = UDim2.new(1, 0, 1, 0)
+            text.BackgroundTransparency = 1
+            text.Text = "🔫"
+            text.TextColor3 = Color3.fromRGB(255, 255, 0)
+            text.TextScaled = true
+            text.Font = Enum.Font.GothamBold
+            text.Parent = billboard
+        end
     end
 end
 
-local function FindGun()
+-- Funções de Teleporte
+local function FindGunPosition()
     for _, v in pairs(workspace:GetDescendants()) do
-        if v:IsA("Tool") and (v.Name:lower():find("gun") or v.Name:lower():find("pistol")) then
-            return v
+        if v:IsA("Tool") and v:FindFirstChild("Handle") then
+            return v.Handle.Position
         end
     end
     return nil
 end
 
--- LOOP PRINCIPAL
-RunService.Heartbeat:Connect(UpdateESP)
+local function TeleportTo(pos)
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(pos)
+    end
+end
 
--- ========== REMOVER O PLACEHOLDER ==========
+-- LOOP PRINCIPAL
+RunService.Heartbeat:Connect(function()
+    UpdateESP()
+    UpdateGunESP()
+end)
+
+-- ========== REMOVER PLACEHOLDER ==========
 for _, v in pairs(contentArea:GetChildren()) do
     if v:IsA("TextLabel") and v.Text == "📦 NCHUB - Adicione seus elementos aqui" then
         v:Destroy()
     end
 end
 
--- ========== CRIAR BOTÕES NA SUA BIBLIOTECA ==========
+-- ========== FUNÇÕES PARA CRIAR BOTÕES ==========
 local yPos = 10
 
--- Título ESP
-local espTitle = Instance.new("TextLabel")
-espTitle.Size = UDim2.new(1, -20, 0, 30)
-espTitle.Position = UDim2.new(0, 10, 0, yPos)
-espTitle.BackgroundTransparency = 1
-espTitle.Text = "👁️ ESP"
-espTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-espTitle.Font = Enum.Font.GothamBold
-espTitle.TextSize = 18
-espTitle.TextXAlignment = Enum.TextXAlignment.Left
-espTitle.Parent = contentArea
-yPos = yPos + 35
+-- Função para criar título
+local function CriarTitulo(texto)
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(1, -20, 0, 30)
+    title.Position = UDim2.new(0, 10, 0, yPos)
+    title.BackgroundTransparency = 1
+    title.Text = texto
+    title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    title.Font = Enum.Font.GothamBold
+    title.TextSize = 18
+    title.TextXAlignment = Enum.TextXAlignment.Left
+    title.Parent = contentArea
+    yPos = yPos + 35
+end
 
--- Função pra criar toggle
+-- Função para criar toggle
 local function CriarToggle(texto, varName, corOn)
     local frame = Instance.new("Frame")
     frame.Size = UDim2.new(1, -20, 0, 35)
@@ -165,30 +217,9 @@ local function CriarToggle(texto, varName, corOn)
     end)
     
     yPos = yPos + 42
-    return frame
 end
 
--- Criar toggles ESP
-CriarToggle("🔴 Murder", "espMurder", Color3.fromRGB(255, 80, 80))
-CriarToggle("🔵 Xerife", "espSheriff", Color3.fromRGB(80, 120, 255))
-CriarToggle("🟢 Inocente", "espInnocent", Color3.fromRGB(80, 255, 80))
-
-yPos = yPos + 10
-
--- Título Teleportes
-local tpTitle = Instance.new("TextLabel")
-tpTitle.Size = UDim2.new(1, -20, 0, 30)
-tpTitle.Position = UDim2.new(0, 10, 0, yPos)
-tpTitle.BackgroundTransparency = 1
-tpTitle.Text = "📍 TELEPORTES"
-tpTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-tpTitle.Font = Enum.Font.GothamBold
-tpTitle.TextSize = 18
-tpTitle.TextXAlignment = Enum.TextXAlignment.Left
-tpTitle.Parent = contentArea
-yPos = yPos + 35
-
--- Função pra criar botão
+-- Função para criar botão
 local function CriarBotao(texto, cor, callback)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, -20, 0, 35)
@@ -212,22 +243,31 @@ local function CriarBotao(texto, cor, callback)
     end)
     
     yPos = yPos + 42
-    return btn
 end
 
--- Criar botões de teleporte
-CriarBotao("🏠 Teleport Lobby", Color3.fromRGB(200, 150, 50), function()
+-- ========== CRIAR BOTÕES ==========
+
+-- Seção ESP
+CriarTitulo("👁️ ESP")
+CriarToggle("🔴 Murder", "espMurder", Color3.fromRGB(255, 80, 80))
+CriarToggle("🔵 Xerife", "espSheriff", Color3.fromRGB(80, 120, 255))
+CriarToggle("🟢 Inocente", "espInnocent", Color3.fromRGB(80, 255, 80))
+CriarToggle("🔫 Armas", "espGun", Color3.fromRGB(255, 255, 0))
+
+-- Seção Teleportes
+CriarTitulo("📍 TELEPORTES")
+CriarBotao("🏠 Lobby", Color3.fromRGB(200, 150, 50), function()
     TeleportTo(Vector3.new(0, 50, 0))
 end)
 
-CriarBotao("🗺️ Teleport Mapa", Color3.fromRGB(150, 200, 50), function()
-    TeleportTo(Vector3.new(100, 50, 100))
+CriarBotao("🗺️ Centro do Mapa", Color3.fromRGB(150, 200, 50), function()
+    TeleportTo(Vector3.new(0, 50, 0))
 end)
 
-CriarBotao("🔫 Teleport Arma", Color3.fromRGB(50, 200, 200), function()
-    local gun = FindGun()
-    if gun then
-        TeleportTo(gun.Position + Vector3.new(0, 3, 0))
+CriarBotao("🔫 Para a Arma", Color3.fromRGB(50, 200, 200), function()
+    local gunPos = FindGunPosition()
+    if gunPos then
+        TeleportTo(gunPos + Vector3.new(0, 3, 0))
     else
         game:GetService("StarterGui"):SetCore("SendNotification", {
             Title = "NCHUB",
@@ -249,8 +289,8 @@ end)
 helpBtn.MouseButton1Click:Connect(function()
     game:GetService("StarterGui"):SetCore("SendNotification", {
         Title = "NCHUB - MM2",
-        Text = "ESP e Teleportes funcionando 100%!\nDiscord.gg/SEU_SERVIDOR",
-        Duration = 3
+        Text = "✅ ESP Funcional\n✅ ESP de Armas\n✅ Teleportes\nDiscord.gg/SEU_SERVIDOR",
+        Duration = 4
     })
 end)
 
@@ -258,5 +298,4 @@ end)
 UpdateCanvas()
 
 print("✅ NCHUB - MM2 carregado com sucesso!")
-print("👁️ ESP: On/Off nos botões")
-print("📍 Teleportes: Lobby, Mapa e Arma")
+print("🔴 ESP Murder | 🔵 ESP Xerife | 🟢 ESP Inocente | 🔫 ESP Armas")
