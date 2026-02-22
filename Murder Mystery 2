@@ -1,204 +1,133 @@
--- NCHUB - Biblioteca Personalizável + MM2 Features FIXADAS (2026 edition)
--- Canvas com ListLayout + funções reais funcionando
+-- ========== CORREÇÕES E MELHORIAS 2026 ==========
 
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local TweenService = game:GetService("TweenService")
-local UserInputService = game:GetService("UserInputService")
-local lp = Players.LocalPlayer
+-- Wallhack corrigido (salva/restaura transparência)
+local originalTransparencies = {}  -- tabela global pra guardar valores
 
--- [Tua GUI principal inteira - loading, mainFrame, topBar, dragging, min/max, etc. - mantida 100%]
-
--- Após criar contentArea, ADICIONE ISSO:
-local uiList = Instance.new("UIListLayout")
-uiList.SortOrder = Enum.SortOrder.LayoutOrder
-uiList.Padding = UDim.new(0, 8)
-uiList.FillDirection = Enum.FillDirection.Vertical
-uiList.HorizontalAlignment = Enum.HorizontalAlignment.Center
-uiList.Parent = contentArea
-
--- UpdateCanvas melhorado
-local function UpdateCanvas()
-    task.wait(0.1)
-    contentArea.CanvasSize = UDim2.new(0, 0, 0, uiList.AbsoluteContentSize.Y + 80)
-end
-
--- Aumenta janela (resolve pequeno/cortado)
-mainFrame.Size = UDim2.new(0, 480, 0, 620)
-originalSize = mainFrame.Size
-
--- Limpa placeholder
-for _, child in contentArea:GetChildren() do
-    if child:IsA("TextLabel") and (child.Text:find("Adicione") or child.Text:find("NCHUB - Adicione")) then
-        child:Destroy()
+local function WallhackFunction()
+    if functions.wallhack then
+        for _, part in ipairs(workspace:GetDescendants()) do
+            if part:IsA("BasePart") and part.Transparency < 0.6 and not part:IsDescendantOf(lp.Character) then
+                if not originalTransparencies[part] then
+                    originalTransparencies[part] = part.Transparency
+                end
+                part.Transparency = 0.75  -- valor bom pra ver através
+            end
+        end
+    else
+        for part, orig in pairs(originalTransparencies) do
+            if part and part.Parent then
+                part.Transparency = orig
+            end
+        end
+        originalTransparencies = {}  -- limpa após restaurar
     end
 end
 
--- ========== VARIÁVEIS E ESTADOS ==========
-local functions = {
-    autoGun = false,
-    autoCollect = false,
-    killAll = false,
-    espMurder = false,
-    espSheriff = false,
-    espInnocent = false,
-    wallhack = false,
-    fly = false,
-    noclip = false,
-    infiniteJump = false,
-    antiAfk = false,
-    fullBright = false
-}
-
+-- ESP corrigido com Highlight + detecção melhor
 local highlights = {}
 
--- ========== FUNÇÕES MELHORADAS ==========
-local function FindGun()
-    for _, v in workspace:GetDescendants() do
-        if v:IsA("Tool") and v.Name:lower():find("gun") then return v end
-    end
-end
-
-local function GetPlayerRole(plr)
-    if not plr.Character then return "Innocent" end
-    if plr.Character:FindFirstChild("Knife") or plr.Backpack:FindFirstChild("Knife") then return "Murderer" end
-    if plr.Character:FindFirstChild("Gun") or plr.Backpack:FindFirstChild("Gun") then return "Sheriff" end
-    return "Innocent"
-end
-
--- Auto Gun (teleport suave + grab)
-local function AutoGun()
-    if not functions.autoGun then return end
-    local gun = FindGun()
-    if gun and lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") then
-        local hrp = lp.Character.HumanoidRootPart
-        local target = gun.Handle.Position + Vector3.new(0, 3, 0)
-        hrp.CFrame = CFrame.new(target)
-        task.wait(0.15)
-        firetouchinterest(hrp, gun.Handle, 0)
-        task.wait(0.05)
-        firetouchinterest(hrp, gun.Handle, 1)
-    end
-end
-
--- Auto Collect (coins/candy)
-local function AutoCollect()
-    if not functions.autoCollect then return end
-    for _, v in workspace:GetDescendants() do
-        if v:IsA("BasePart") and (v.Name:lower():find("coin") or v.Name:lower():find("candy")) then
-            if lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") then
-                firetouchinterest(lp.Character.HumanoidRootPart, v, 0)
-                task.wait(0.01)
-                firetouchinterest(lp.Character.HumanoidRootPart, v, 1)
+local function UpdateESP()
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr == lp or not plr.Character then continue end
+        
+        local hasKnife = plr.Character:FindFirstChild("Knife") or plr.Backpack:FindFirstChild("Knife")
+        local hasGun   = plr.Character:FindFirstChild("Gun")   or plr.Backpack:FindFirstChild("Gun")
+        
+        local role = "Innocent"
+        if hasKnife then role = "Murderer" end
+        if hasGun   then role = "Sheriff" end
+        
+        local shouldShow = (role == "Murderer" and functions.espMurder) or
+                           (role == "Sheriff" and functions.espSheriff) or
+                           (role == "Innocent" and functions.espInnocent)
+        
+        if shouldShow then
+            if not highlights[plr] then
+                local hl = Instance.new("Highlight")
+                hl.Name = "NCHUB_ESP"
+                hl.Adornee = plr.Character
+                hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                hl.FillTransparency = 0.45
+                
+                if role == "Murderer" then
+                    hl.FillColor = Color3.fromRGB(255, 40, 40)
+                    hl.OutlineColor = Color3.fromRGB(255, 200, 0)
+                elseif role == "Sheriff" then
+                    hl.FillColor = Color3.fromRGB(40, 120, 255)
+                    hl.OutlineColor = Color3.fromRGB(220, 220, 255)
+                else
+                    hl.FillColor = Color3.fromRGB(40, 255, 100)
+                    hl.OutlineColor = Color3.fromRGB(200, 255, 220)
+                end
+                
+                hl.Parent = plr.Character
+                highlights[plr] = hl
+            end
+        else
+            if highlights[plr] then
+                highlights[plr]:Destroy()
+                highlights[plr] = nil
             end
         end
     end
 end
 
--- Kill All (só se Murderer)
-local function KillAll()
-    if not functions.killAll then return end
-    if GetPlayerRole(lp) ~= "Murderer" then return end
-    for _, plr in Players:GetPlayers() do
-        if plr ~= lp and plr.Character and plr.Character:FindFirstChild("Humanoid") then
-            plr.Character.Humanoid.Health = 0
-        end
-    end
-end
-
--- ESP com Highlight
-local function CreateHighlight(plr, color, outline)
-    if not plr.Character or highlights[plr] then return end
-    local hl = Instance.new("Highlight")
-    hl.FillColor = color
-    hl.FillTransparency = 0.4
-    hl.OutlineColor = outline
-    hl.OutlineTransparency = 0
-    hl.Parent = plr.Character
-    highlights[plr] = hl
-end
-
-local function ESP()
-    for _, plr in Players:GetPlayers() do
-        if plr == lp then continue end
-        local role = GetPlayerRole(plr)
-        if (role == "Murderer" and functions.espMurder) or
-           (role == "Sheriff" and functions.espSheriff) or
-           (role == "Innocent" and functions.espInnocent) then
-            local col = role == "Murderer" and Color3.fromRGB(255,0,0) or
-                        role == "Sheriff" and Color3.fromRGB(0,120,255) or
-                        Color3.fromRGB(0,255,100)
-            local out = role == "Murderer" and Color3.fromRGB(255,255,0) or Color3.fromRGB(255,255,255)
-            CreateHighlight(plr, col, out)
-        elseif highlights[plr] then
-            highlights[plr]:Destroy()
-            highlights[plr] = nil
-        end
-    end
-end
-
--- Limpeza ao sair
+-- Limpeza ao player sair
 Players.PlayerRemoving:Connect(function(plr)
-    if highlights[plr] then highlights[plr]:Destroy() highlights[plr] = nil end
+    if highlights[plr] then
+        highlights[plr]:Destroy()
+        highlights[plr] = nil
+    end
 end)
 
--- ========== BOTÕES COM TOGGLE MELHOR ==========
-local function CreateToggle(name, var, colorOff, colorOn)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, -20, 0, 45)
-    btn.BackgroundColor3 = colorOff
-    btn.BorderSizePixel = 0
-    btn.Text = name .. ": OFF"
-    btn.TextColor3 = Color3.new(1,1,1)
-    btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 15
-    btn.Parent = contentArea
-    
-    local corner = Instance.new("UICorner", btn)
-    corner.CornerRadius = UDim.new(0,10)
-    
-    btn.MouseButton1Click:Connect(function()
-        functions[var] = not functions[var]
-        btn.Text = name .. (functions[var] and ": ON" or ": OFF")
-        btn.BackgroundColor3 = functions[var] and colorOn or colorOff
-        UpdateCanvas()
-    end)
+-- Auto Gun melhorado (sem tween excessivo, mais direto)
+local function AutoGunFunction()
+    if not functions.autoGun then return end
+    local gun = FindGun()
+    if gun and lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") then
+        local hrp = lp.Character.HumanoidRootPart
+        local target = gun.Handle.Position + Vector3.new(0, 3, 0)
+        local dist = (hrp.Position - target).Magnitude
+        
+        if dist < 12 then
+            hrp.CFrame = CFrame.new(target)
+            task.wait(0.08)
+            firetouchinterest(hrp, gun.Handle, 0)
+            task.wait(0.04)
+            firetouchinterest(hrp, gun.Handle, 1)
+        end
+    end
 end
 
--- Títulos e botões
-local titles = {
-    {text = "⚡ AUTO", color = Color3.fromRGB(255,200,0)},
-    {text = "👁️ ESP", color = Color3.fromRGB(100,255,100)}
-}
-
-for i, t in titles do
-    local lbl = Instance.new("TextLabel")
-    lbl.Size = UDim2.new(1, -20, 0, 35)
-    lbl.BackgroundTransparency = 1
-    lbl.Text = t.text
-    lbl.TextColor3 = t.color
-    lbl.Font = Enum.Font.GothamBold
-    lbl.TextSize = 18
-    lbl.TextXAlignment = Enum.TextXAlignment.Left
-    lbl.Parent = contentArea
+-- Auto Collect corrigido (remove break, coleta todas)
+local function AutoCollectFunction()
+    if not functions.autoCollect then return end
+    
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("BasePart") and (obj.Name:lower():find("coin") or obj.Name:lower():find("candy") or obj.Name:lower():find("money")) then
+            if lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") then
+                local hrp = lp.Character.HumanoidRootPart
+                firetouchinterest(hrp, obj, 0)
+                task.wait(0.015)
+                firetouchinterest(hrp, obj, 1)
+            end
+        end
+    end
 end
 
-CreateToggle("🔫 Auto Pegar Gun", "autoGun", Color3.fromRGB(40,60,100), Color3.fromRGB(0,150,255))
-CreateToggle("💰 Auto Coletar", "autoCollect", Color3.fromRGB(60,80,40), Color3.fromRGB(100,255,100))
-CreateToggle("💀 Kill All (Murder)", "killAll", Color3.fromRGB(80,30,30), Color3.fromRGB(200,50,50))
-
-CreateToggle("🔴 ESP Murder", "espMurder", Color3.fromRGB(60,30,30), Color3.fromRGB(220,50,50))
-CreateToggle("🔵 ESP Sheriff", "espSheriff", Color3.fromRGB(30,40,80), Color3.fromRGB(50,150,255))
-CreateToggle("🟢 ESP Innocent", "espInnocent", Color3.fromRGB(30,60,30), Color3.fromRGB(50,220,100))
-
--- Loop principal
-RunService.Heartbeat:Connect(function()
-    AutoGun()
-    AutoCollect()
-    KillAll()
-    ESP()
-    -- Adicione wallhack/fly/etc. se quiser ativar depois
+-- ========== LOOP PRINCIPAL ATUALIZADO ==========
+RunService.Heartbeat:Connect(function(delta)
+    if functions.autoGun     then AutoGunFunction()     end
+    if functions.autoCollect then AutoCollectFunction() end
+    if functions.killAll     then KillAllFunction()     end
+    if functions.espMurder or functions.espSheriff or functions.espInnocent then
+        UpdateESP()
+    end
+    WallhackFunction()  -- roda sempre pra restaurar quando off
 end)
 
+-- Atualiza canvas uma última vez após tudo
+task.wait(0.3)
 UpdateCanvas()
-print("NCHUB MM2 2026 - Corrigido e rodando liso!")
+
+print("NCHUB MM2 TININDO! Wallhack restaura, ESP Murder/Sheriff funciona, Auto farm real.")
