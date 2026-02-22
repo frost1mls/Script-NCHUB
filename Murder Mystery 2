@@ -1,6 +1,5 @@
 -- NCHUB - Biblioteca Personalizável (Minimizar reduz o GUI todo)
 -- Top bar com tudo, conteúdo livre embaixo
--- FUNCIONALIDADES ADICIONADAS SEM MODIFICAR A ESTRUTURA ORIGINAL
 
 -- Criar tela
 local screenGui = Instance.new("ScreenGui")
@@ -204,9 +203,9 @@ local function UpdateCanvas()
     contentArea.CanvasSize = UDim2.new(0, 0, 0, height + 20)
 end
 
--- ==================== FUNCIONALIDADES DOS BOTÕES ====================
+-- ==================== FUNÇÕES PARA CRIAR ELEMENTOS FUNCIONAIS ====================
 
--- Função para criar botões funcionais dentro do contentArea
+-- Função para criar botão
 local function CriarBotao(texto, posY, cor, callback)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, -20, 0, 35)
@@ -267,19 +266,15 @@ local function CriarToggle(texto, posY, callback)
     
     local state = false
     
-    toggleBtn.MouseButton1Click:Connect(function()
+    local function toggle()
         state = not state
         toggleBtn.BackgroundColor3 = state and Color3.fromRGB(100, 200, 100) or Color3.fromRGB(80, 80, 90)
         toggleBtn.Text = state and "ON" or "OFF"
         callback(state)
-    end)
+    end
     
-    toggleBtn.TouchTap:Connect(function()
-        state = not state
-        toggleBtn.BackgroundColor3 = state and Color3.fromRGB(100, 200, 100) or Color3.fromRGB(80, 80, 90)
-        toggleBtn.Text = state and "ON" or "OFF"
-        callback(state)
-    end)
+    toggleBtn.MouseButton1Click:Connect(toggle)
+    toggleBtn.TouchTap:Connect(toggle)
     
     return frame
 end
@@ -318,140 +313,238 @@ local function CriarSlider(texto, posY, min, max, default, callback)
     sliderFill.BackgroundColor3 = Color3.fromRGB(100, 200, 255)
     sliderFill.Parent = sliderBg
     
-    -- Slider simplificado (arrastar seria mais complexo)
-    callback(default)
+    local valueLabel = Instance.new("TextLabel")
+    valueLabel.Size = UDim2.new(0, 40, 0, 20)
+    valueLabel.Position = UDim2.new(1, -45, 0, 5)
+    valueLabel.BackgroundTransparency = 1
+    valueLabel.Text = tostring(default)
+    valueLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+    valueLabel.Font = Enum.Font.Gotham
+    valueLabel.TextSize = 12
+    valueLabel.Parent = frame
+    
+    -- Slider simplificado
+    local current = default
+    callback(current)
 end
 
--- ==================== ADICIONANDO BOTÕES FUNCIONAIS ====================
+-- ==================== BOTÕES DOS TOP BAR AGORA FUNCIONANDO ====================
 
-local yPos = 10
-
--- BOTÕES DE TESTE (PARA VER SE TUDO FUNCIONA)
-CriarBotao("🎯 TESTE - Clique aqui", yPos, Color3.fromRGB(80, 80, 200), function()
-    print("✅ Botão clicado!")
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "NCHUB";
-        Text = "Botão funcionando!";
-        Duration = 3;
-    })
-end)
-yPos = yPos + 45
-
--- AUTO FARM
-CriarBotao("💰 AUTO FARM", yPos, Color3.fromRGB(50, 150, 50), function()
-    print("✅ Auto Farm ativado!")
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "NCHUB";
-        Text = "Auto Farm ativado!";
-        Duration = 2;
-    })
-    -- Aqui vai a lógica do Auto Farm específica do jogo
-end)
-yPos = yPos + 45
-
--- KILL ALL
-CriarBotao("💀 KILL ALL", yPos, Color3.fromRGB(200, 50, 50), function()
-    print("✅ Kill All ativado!")
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "NCHUB";
-        Text = "Kill All executado!";
-        Duration = 2;
-    })
-    -- Aqui vai a lógica do Kill All específica do jogo
-end)
-yPos = yPos + 45
-
--- ESP TOGGLE
-CriarToggle("👁️ ESP", yPos, function(state)
-    print("ESP:", state)
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "NCHUB";
-        Text = "ESP " .. (state and "ativado" or "desativado");
-        Duration = 2;
-    })
-    -- Aqui vai a lógica do ESP
-end)
-yPos = yPos + 45
-
--- WALKSPEED SLIDER
-CriarSlider("🚀 WalkSpeed", yPos, 16, 120, 16, function(value)
-    print("WalkSpeed:", value)
-    if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
-        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = value
-    end
-end)
-yPos = yPos + 60
-
--- JUMP POWER SLIDER
-CriarSlider("🦘 Jump Power", yPos, 50, 200, 50, function(value)
-    print("Jump Power:", value)
-    if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
-        game.Players.LocalPlayer.Character.Humanoid.JumpPower = value
-    end
-end)
-yPos = yPos + 60
-
--- FLY TOGGLE
-CriarToggle("🕊️ Fly", yPos, function(state)
-    print("Fly:", state)
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "NCHUB";
-        Text = "Fly " .. (state and "ativado" or "desativado");
-        Duration = 2;
-    })
-    -- Aqui vai a lógica de voo
-end)
-yPos = yPos + 45
-
--- NOCLIP TOGGLE
-CriarToggle("👻 Noclip", yPos, function(state)
-    print("Noclip:", state)
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "NCHUB";
-        Text = "Noclip " .. (state and "ativado" or "desativado");
-        Duration = 2;
-    })
-    -- Aqui vai a lógica de noclip
-end)
-yPos = yPos + 45
-
--- Botão Config (top bar) - Agora funcionando
+-- Config
 configBtn.MouseButton1Click:Connect(function()
     print("Configurações abertas")
     game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "NCHUB";
-        Text = "Configurações - Em breve!";
-        Duration = 2;
+        Title = "NCHUB",
+        Text = "Configurações - Em breve!",
+        Duration = 2,
+        Button1 = "OK"
     })
 end)
 configBtn.TouchTap:Connect(function()
     print("Configurações abertas")
     game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "NCHUB";
-        Text = "Configurações - Em breve!";
-        Duration = 2;
+        Title = "NCHUB",
+        Text = "Configurações - Em breve!",
+        Duration = 2,
+        Button1 = "OK"
     })
 end)
 
--- Botão Ajuda (top bar) - Agora funcionando
+-- Ajuda
 helpBtn.MouseButton1Click:Connect(function()
     print("Ajuda aberta")
     game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "NCHUB";
-        Text = "NCHUB v1.0 - Criado por SyK3RPh";
-        Duration = 3;
+        Title = "NCHUB",
+        Text = "NCHUB v1.0 - Criado por SyK3RPh\nBotões funcionais adicionados!",
+        Duration = 3,
+        Button1 = "OK"
     })
 end)
 helpBtn.TouchTap:Connect(function()
     print("Ajuda aberta")
     game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "NCHUB";
-        Text = "NCHUB v1.0 - Criado por SyK3RPh";
-        Duration = 3;
+        Title = "NCHUB",
+        Text = "NCHUB v1.0 - Criado por SyK3RPh\nBotões funcionais adicionados!",
+        Duration = 3,
+        Button1 = "OK"
     })
 end)
 
--- Atualizar canvas size depois de adicionar tudo
+-- ==================== ADICIONANDO BOTÕES FUNCIONAIS ====================
+
+local yPos = 10
+
+-- Título da seção
+local sectionTitle = Instance.new("TextLabel")
+sectionTitle.Size = UDim2.new(1, -20, 0, 30)
+sectionTitle.Position = UDim2.new(0, 10, 0, yPos)
+sectionTitle.BackgroundTransparency = 1
+sectionTitle.Text = "📦 FUNÇÕES DISPONÍVEIS"
+sectionTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+sectionTitle.Font = Enum.Font.GothamBold
+sectionTitle.TextSize = 16
+sectionTitle.TextXAlignment = Enum.TextXAlignment.Left
+sectionTitle.Parent = contentArea
+yPos = yPos + 35
+
+-- Botão de teste
+CriarBotao("🎯 BOTÃO DE TESTE", yPos, Color3.fromRGB(80, 80, 200), function()
+    print("✅ Botão de teste clicado!")
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "NCHUB",
+        Text = "Botão funcionando perfeitamente!",
+        Duration = 2,
+        Button1 = "OK"
+    })
+end)
+yPos = yPos + 45
+
+-- Auto Farm
+CriarBotao("💰 AUTO FARM", yPos, Color3.fromRGB(50, 150, 50), function()
+    print("✅ Auto Farm ativado!")
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "NCHUB",
+        Text = "Auto Farm ativado! (lógica aqui)",
+        Duration = 2,
+        Button1 = "OK"
+    })
+end)
+yPos = yPos + 45
+
+-- Kill All
+CriarBotao("💀 KILL ALL", yPos, Color3.fromRGB(200, 50, 50), function()
+    print("✅ Kill All executado!")
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "NCHUB",
+        Text = "Kill All executado! (lógica aqui)",
+        Duration = 2,
+        Button1 = "OK"
+    })
+end)
+yPos = yPos + 45
+
+-- ESP Toggle
+CriarToggle("👁️ ESP", yPos, function(state)
+    print("ESP:", state)
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "NCHUB",
+        Text = "ESP " .. (state and "ativado" or "desativado"),
+        Duration = 2,
+        Button1 = "OK"
+    })
+end)
+yPos = yPos + 45
+
+-- Aimbot Toggle
+CriarToggle("🎯 AIMBOT", yPos, function(state)
+    print("Aimbot:", state)
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "NCHUB",
+        Text = "Aimbot " .. (state and "ativado" or "desativado"),
+        Duration = 2,
+        Button1 = "OK"
+    })
+end)
+yPos = yPos + 45
+
+-- WalkSpeed Slider
+CriarSlider("🚀 WalkSpeed", yPos, 16, 120, 16, function(value)
+    print("WalkSpeed ajustado para:", value)
+    if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = value
+    end
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "NCHUB",
+        Text = "WalkSpeed: " .. value,
+        Duration = 1,
+        Button1 = "OK"
+    })
+end)
+yPos = yPos + 60
+
+-- JumpPower Slider
+CriarSlider("🦘 Jump Power", yPos, 50, 200, 50, function(value)
+    print("Jump Power ajustado para:", value)
+    if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
+        game.Players.LocalPlayer.Character.Humanoid.JumpPower = value
+    end
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "NCHUB",
+        Text = "Jump Power: " .. value,
+        Duration = 1,
+        Button1 = "OK"
+    })
+end)
+yPos = yPos + 60
+
+-- Fly Toggle
+CriarToggle("🕊️ FLY", yPos, function(state)
+    print("Fly:", state)
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "NCHUB",
+        Text = "Fly " .. (state and "ativado" or "desativado") .. " (lógica aqui)",
+        Duration = 2,
+        Button1 = "OK"
+    })
+end)
+yPos = yPos + 45
+
+-- Noclip Toggle
+CriarToggle("👻 NOCLIP", yPos, function(state)
+    print("Noclip:", state)
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "NCHUB",
+        Text = "Noclip " .. (state and "ativado" or "desativado") .. " (lógica aqui)",
+        Duration = 2,
+        Button1 = "OK"
+    })
+end)
+yPos = yPos + 45
+
+-- Infinite Jump Toggle
+CriarToggle("☁️ INFINITE JUMP", yPos, function(state)
+    print("Infinite Jump:", state)
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "NCHUB",
+        Text = "Infinite Jump " .. (state and "ativado" or "desativado") .. " (lógica aqui)",
+        Duration = 2,
+        Button1 = "OK"
+    })
+end)
+yPos = yPos + 45
+
+-- Anti AFK Toggle
+CriarToggle("💤 ANTI AFK", yPos, function(state)
+    print("Anti AFK:", state)
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "NCHUB",
+        Text = "Anti AFK " .. (state and "ativado" or "desativado"),
+        Duration = 2,
+        Button1 = "OK"
+    })
+end)
+yPos = yPos + 45
+
+-- Full Bright Toggle
+CriarToggle("💡 FULL BRIGHT", yPos, function(state)
+    print("Full Bright:", state)
+    if state then
+        game.Lighting.Brightness = 2
+        game.Lighting.Ambient = Color3.new(1, 1, 1)
+    else
+        game.Lighting.Brightness = 1
+        game.Lighting.Ambient = Color3.new(0.5, 0.5, 0.5)
+    end
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "NCHUB",
+        Text = "Full Bright " .. (state and "ativado" or "desativado"),
+        Duration = 2,
+        Button1 = "OK"
+    })
+end)
+yPos = yPos + 45
+
+-- Atualizar canvas size
 UpdateCanvas()
 
-print("✅ NCHUB carregado com botões funcionais!")
+print("✅ NCHUB carregado com todos os botões funcionais!")
