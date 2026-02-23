@@ -1,50 +1,28 @@
--- ============================================
--- NCHUB PRO - VERSÃO PREMIUM
--- Design Moderno com Abas e Animações
--- ============================================
+-- NCHUB - Sua Biblioteca Personalizável (com tela de carregamento premium)
+-- Top bar com tudo, conteúdo livre embaixo
 
+-- ============================================
+-- TELA DE CARREGAMENTO PREMIUM (SÓ ISSO FOI ADICIONADO)
+-- ============================================
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
 local LP = Players.LocalPlayer
-local RunService = game:GetService("RunService")
-local Workspace = game:GetService("Workspace")
 
--- Cores do tema profissional
-local COLORS = {
-    Primary = Color3.fromRGB(25, 25, 35),
-    Secondary = Color3.fromRGB(35, 35, 45),
-    Accent = Color3.fromRGB(100, 150, 255),
-    Success = Color3.fromRGB(75, 255, 100),
-    Danger = Color3.fromRGB(255, 75, 75),
-    Warning = Color3.fromRGB(255, 200, 75),
-    Text = Color3.fromRGB(230, 230, 230),
-    TextDim = Color3.fromRGB(150, 150, 150),
-    Murder = Color3.fromRGB(255, 50, 50),
-    Sheriff = Color3.fromRGB(50, 150, 255),
-    Innocent = Color3.fromRGB(75, 255, 100),
-    Gun = Color3.fromRGB(255, 255, 50)
-}
+-- Criar tela de carregamento temporária
+local loadingScreen = Instance.new("ScreenGui")
+loadingScreen.Name = "LoadingScreen"
+loadingScreen.Parent = LP:WaitForChild("PlayerGui")
+loadingScreen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+loadingScreen.DisplayOrder = 999
 
--- Criar tela principal
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "NCHUB_PRO"
-screenGui.Parent = LP:WaitForChild("PlayerGui")
-screenGui.ResetOnSpawn = false
-screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-screenGui.DisplayOrder = 999
-
--- ============================================
--- TELA DE CARREGAMENTO PROFISSIONAL
--- ============================================
 local loadingFrame = Instance.new("Frame")
 loadingFrame.Name = "Loading"
 loadingFrame.Size = UDim2.new(0, 400, 0, 200)
 loadingFrame.Position = UDim2.new(0.5, -200, 0.5, -100)
-loadingFrame.BackgroundColor3 = COLORS.Primary
+loadingFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
 loadingFrame.BackgroundTransparency = 0.1
 loadingFrame.BorderSizePixel = 0
-loadingFrame.Parent = screenGui
+loadingFrame.Parent = loadingScreen
 
 local loadingCorner = Instance.new("UICorner")
 loadingCorner.CornerRadius = UDim.new(0, 20)
@@ -55,7 +33,7 @@ loadingGlow.Size = UDim2.new(1, 20, 1, 20)
 loadingGlow.Position = UDim2.new(0, -10, 0, -10)
 loadingGlow.BackgroundTransparency = 1
 loadingGlow.Image = "rbxassetid://6014261993"
-loadingGlow.ImageColor3 = COLORS.Accent
+loadingGlow.ImageColor3 = Color3.fromRGB(100, 150, 255)
 loadingGlow.ImageTransparency = 0.7
 loadingGlow.ScaleType = Enum.ScaleType.Slice
 loadingGlow.SliceCenter = Rect.new(49, 49, 450, 450)
@@ -65,8 +43,8 @@ local loadingTitle = Instance.new("TextLabel")
 loadingTitle.Size = UDim2.new(1, 0, 0, 50)
 loadingTitle.Position = UDim2.new(0, 0, 0, 30)
 loadingTitle.BackgroundTransparency = 1
-loadingTitle.Text = "NCHUB PRO"
-loadingTitle.TextColor3 = COLORS.Text
+loadingTitle.Text = "NCHUB"
+loadingTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
 loadingTitle.Font = Enum.Font.GothamBold
 loadingTitle.TextSize = 36
 loadingTitle.Parent = loadingFrame
@@ -75,8 +53,8 @@ local loadingSubtitle = Instance.new("TextLabel")
 loadingSubtitle.Size = UDim2.new(1, 0, 0, 30)
 loadingSubtitle.Position = UDim2.new(0, 0, 0, 80)
 loadingSubtitle.BackgroundTransparency = 1
-loadingSubtitle.Text = "Carregando recursos premium..."
-loadingSubtitle.TextColor3 = COLORS.TextDim
+loadingSubtitle.Text = "Carregando recursos..."
+loadingSubtitle.TextColor3 = Color3.fromRGB(150, 150, 150)
 loadingSubtitle.Font = Enum.Font.Gotham
 loadingSubtitle.TextSize = 16
 loadingSubtitle.Parent = loadingFrame
@@ -84,7 +62,7 @@ loadingSubtitle.Parent = loadingFrame
 local loadingBar = Instance.new("Frame")
 loadingBar.Size = UDim2.new(0, 300, 0, 4)
 loadingBar.Position = UDim2.new(0.5, -150, 0, 140)
-loadingBar.BackgroundColor3 = COLORS.Secondary
+loadingBar.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
 loadingBar.BorderSizePixel = 0
 loadingBar.Parent = loadingFrame
 
@@ -94,7 +72,7 @@ loadingBarCorner.Parent = loadingBar
 
 local loadingProgress = Instance.new("Frame")
 loadingProgress.Size = UDim2.new(0, 0, 1, 0)
-loadingProgress.BackgroundColor3 = COLORS.Accent
+loadingProgress.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
 loadingProgress.BorderSizePixel = 0
 loadingProgress.Parent = loadingBar
 
@@ -110,761 +88,122 @@ end
 
 task.wait(0.5)
 
--- Animar saída
-loadingFrame:TweenPosition(UDim2.new(0.5, -200, 1.5, 0), "Out", "Back", 0.8, true)
-task.wait(0.8)
-loadingFrame:Destroy()
+-- ============================================
+-- SEU GUI ORIGINAL (COMPLETAMENTE PRESERVADO)
+-- ============================================
 
--- ============================================
--- GUI PRINCIPAL PROFISSIONAL
--- ============================================
+-- Criar tela principal
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "NCHUB"
+screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+screenGui.ResetOnSpawn = false
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+-- Fechar tela de carregamento
+loadingScreen:Destroy()
+
+-- GUI Principal
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 700, 0, 450)
-mainFrame.Position = UDim2.new(0.5, -350, 0.5, -225)
-mainFrame.BackgroundColor3 = COLORS.Primary
+mainFrame.Size = UDim2.new(0, 420, 0, 340) -- Tamanho normal
+mainFrame.Position = UDim2.new(0.5, -210, 0.5, -170)
+mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
 mainFrame.BorderSizePixel = 0
 mainFrame.ClipsDescendants = true
 mainFrame.Parent = screenGui
 
 local mainCorner = Instance.new("UICorner")
-mainCorner.CornerRadius = UDim.new(0, 20)
+mainCorner.CornerRadius = UDim.new(0, 16)
 mainCorner.Parent = mainFrame
 
-local mainGlow = Instance.new("ImageLabel")
-mainGlow.Size = UDim2.new(1, 30, 1, 30)
-mainGlow.Position = UDim2.new(0, -15, 0, -15)
-mainGlow.BackgroundTransparency = 1
-mainGlow.Image = "rbxassetid://6014261993"
-mainGlow.ImageColor3 = COLORS.Accent
-mainGlow.ImageTransparency = 0.8
-mainGlow.ScaleType = Enum.ScaleType.Slice
-mainGlow.SliceCenter = Rect.new(49, 49, 450, 450)
-mainGlow.Parent = mainFrame
-
--- TOP BAR PREMIUM
+-- TOP BAR
 local topBar = Instance.new("Frame")
 topBar.Name = "TopBar"
-topBar.Size = UDim2.new(1, 0, 0, 50)
-topBar.BackgroundColor3 = COLORS.Secondary
+topBar.Size = UDim2.new(1, 0, 0, 45)
+topBar.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
 topBar.BorderSizePixel = 0
 topBar.Parent = mainFrame
 
 local topBarCorner = Instance.new("UICorner")
-topBarCorner.CornerRadius = UDim.new(0, 20)
+topBarCorner.CornerRadius = UDim.new(0, 16)
 topBarCorner.Parent = topBar
 
-local hubIcon = Instance.new("TextLabel")
-hubIcon.Size = UDim2.new(0, 40, 1, 0)
-hubIcon.Position = UDim2.new(0, 15, 0, 0)
-hubIcon.BackgroundTransparency = 1
-hubIcon.Text = "⚡"
-hubIcon.TextColor3 = COLORS.Accent
-hubIcon.Font = Enum.Font.GothamBold
-hubIcon.TextSize = 24
-hubIcon.Parent = topBar
-
+-- Nome do Hub
 local hubName = Instance.new("TextLabel")
-hubName.Size = UDim2.new(0, 150, 1, 0)
-hubName.Position = UDim2.new(0, 55, 0, 0)
+hubName.Size = UDim2.new(0, 120, 1, 0)
+hubName.Position = UDim2.new(0, 12, 0, 0)
 hubName.BackgroundTransparency = 1
-hubName.Text = "NCHUB PRO"
-hubName.TextColor3 = COLORS.Text
+hubName.Text = "NCHUB"
+hubName.TextColor3 = Color3.fromRGB(255, 255, 255)
 hubName.Font = Enum.Font.GothamBold
 hubName.TextSize = 18
 hubName.TextXAlignment = Enum.TextXAlignment.Left
 hubName.Parent = topBar
 
-local hubVersion = Instance.new("TextLabel")
-hubVersion.Size = UDim2.new(0, 50, 1, 0)
-hubVersion.Position = UDim2.new(0, 200, 0, 0)
-hubVersion.BackgroundTransparency = 1
-hubVersion.Text = "v2.0"
-hubVersion.TextColor3 = COLORS.TextDim
-hubVersion.Font = Enum.Font.Gotham
-hubVersion.TextSize = 14
-hubVersion.TextXAlignment = Enum.TextXAlignment.Left
-hubVersion.Parent = topBar
+-- Container dos botões
+local buttonContainer = Instance.new("Frame")
+buttonContainer.Size = UDim2.new(0, 120, 1, 0)
+buttonContainer.Position = UDim2.new(1, -130, 0, 0)
+buttonContainer.BackgroundTransparency = 1
+buttonContainer.Parent = topBar
 
--- Container dos botões da top bar
-local topButtons = Instance.new("Frame")
-topButtons.Size = UDim2.new(0, 160, 1, 0)
-topButtons.Position = UDim2.new(1, -170, 0, 0)
-topButtons.BackgroundTransparency = 1
-topButtons.Parent = topBar
+-- Botão Config
+local configBtn = Instance.new("TextButton")
+configBtn.Size = UDim2.new(0, 30, 1, 0)
+configBtn.Position = UDim2.new(0, 0, 0, 0)
+configBtn.BackgroundTransparency = 1
+configBtn.Text = "⚙️"
+configBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+configBtn.TextSize = 20
+configBtn.Font = Enum.Font.Gotham
+configBtn.Parent = buttonContainer
 
-local function createTopButton(pos, text, color)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0, 40, 0, 40)
-    btn.Position = UDim2.new(0, pos * 40, 0.5, -20)
-    btn.BackgroundColor3 = COLORS.Primary
-    btn.BackgroundTransparency = 0.3
-    btn.Text = text
-    btn.TextColor3 = color or COLORS.Text
-    btn.TextSize = 20
-    btn.Font = Enum.Font.GothamBold
-    btn.Parent = topButtons
-    
-    local btnCorner = Instance.new("UICorner")
-    btnCorner.CornerRadius = UDim.new(0, 8)
-    btnCorner.Parent = btn
-    
-    return btn
-end
+-- Botão Minimizar/Maximizar
+local minMaxBtn = Instance.new("TextButton")
+minMaxBtn.Size = UDim2.new(0, 30, 1, 0)
+minMaxBtn.Position = UDim2.new(0, 30, 0, 0)
+minMaxBtn.BackgroundTransparency = 1
+minMaxBtn.Text = "−"
+minMaxBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+minMaxBtn.TextSize = 24
+minMaxBtn.Font = Enum.Font.GothamBold
+minMaxBtn.Parent = buttonContainer
 
-local minMaxBtn = createTopButton(0, "−")
-local closeBtn = createTopButton(1, "✕", COLORS.Danger)
-local settingsBtn = createTopButton(2, "⚙️")
-local helpBtn = createTopButton(3, "?", COLORS.Warning)
+-- Botão Fechar
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0, 30, 1, 0)
+closeBtn.Position = UDim2.new(0, 60, 0, 0)
+closeBtn.BackgroundTransparency = 1
+closeBtn.Text = "✕"
+closeBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+closeBtn.TextSize = 18
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.Parent = buttonContainer
 
--- ============================================
--- SISTEMA DE ABAS LATERAIS
--- ============================================
-local sidebar = Instance.new("Frame")
-sidebar.Name = "Sidebar"
-sidebar.Size = UDim2.new(0, 60, 1, -50)
-sidebar.Position = UDim2.new(0, 0, 0, 50)
-sidebar.BackgroundColor3 = COLORS.Secondary
-sidebar.BorderSizePixel = 0
-sidebar.Parent = mainFrame
+-- Botão Ajuda
+local helpBtn = Instance.new("TextButton")
+helpBtn.Size = UDim2.new(0, 30, 1, 0)
+helpBtn.Position = UDim2.new(0, 90, 0, 0)
+helpBtn.BackgroundTransparency = 1
+helpBtn.Text = "?"
+helpBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+helpBtn.TextSize = 20
+helpBtn.Font = Enum.Font.GothamBold
+helpBtn.Parent = buttonContainer
 
-local sidebarCorner = Instance.new("UICorner")
-sidebarCorner.CornerRadius = UDim.new(0, 20)
-sidebarCorner.Parent = sidebar
-
-local tabs = {
-    {name = "🏠", tooltip = "Início"},
-    {name = "🌾", tooltip = "Farm"},
-    {name = "👁️", tooltip = "ESP Beta"},
-    {name = "⚔️", tooltip = "Combat"},
-    {name = "🔧", tooltip = "Config"}
-}
-
-local tabButtons = {}
-local currentTab = "Início"
-
-local function createTabButton(pos, icon, tooltip)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0, 50, 0, 50)
-    btn.Position = UDim2.new(0.5, -25, 0, 10 + (pos * 60))
-    btn.BackgroundColor3 = COLORS.Primary
-    btn.BackgroundTransparency = 0.5
-    btn.Text = icon
-    btn.TextColor3 = COLORS.TextDim
-    btn.TextSize = 24
-    btn.Font = Enum.Font.GothamBold
-    btn.Parent = sidebar
-    
-    local btnCorner = Instance.new("UICorner")
-    btnCorner.CornerRadius = UDim.new(0, 12)
-    btnCorner.Parent = btn
-    
-    -- Tooltip
-    local tooltipFrame = Instance.new("Frame")
-    tooltipFrame.Size = UDim2.new(0, 80, 0, 30)
-    tooltipFrame.Position = UDim2.new(1, 10, 0.5, -15)
-    tooltipFrame.BackgroundColor3 = COLORS.Primary
-    tooltipFrame.BackgroundTransparency = 0.2
-    tooltipFrame.Visible = false
-    tooltipFrame.Parent = btn
-    tooltipFrame.ZIndex = 999
-    
-    local tooltipCorner = Instance.new("UICorner")
-    tooltipCorner.CornerRadius = UDim.new(0, 8)
-    tooltipCorner.Parent = tooltipFrame
-    
-    local tooltipText = Instance.new("TextLabel")
-    tooltipText.Size = UDim2.new(1, 0, 1, 0)
-    tooltipText.BackgroundTransparency = 1
-    tooltipText.Text = tooltip
-    tooltipText.TextColor3 = COLORS.Text
-    tooltipText.Font = Enum.Font.Gotham
-    tooltipText.TextSize = 14
-    tooltipText.Parent = tooltipFrame
-    
-    btn.MouseEnter:Connect(function()
-        tooltipFrame.Visible = true
-    end)
-    
-    btn.MouseLeave:Connect(function()
-        tooltipFrame.Visible = false
-    end)
-    
-    return btn
-end
-
-for i, tab in ipairs(tabs) do
-    tabButtons[tab.tooltip] = createTabButton(i-1, tab.name, tab.tooltip)
-end
-
--- Área de conteúdo principal
-local contentArea = Instance.new("Frame")
+-- Área de Conteúdo
+local contentArea = Instance.new("ScrollingFrame")
 contentArea.Name = "ContentArea"
-contentArea.Size = UDim2.new(1, -70, 1, -60)
-contentArea.Position = UDim2.new(0, 65, 0, 55)
-contentArea.BackgroundColor3 = COLORS.Secondary
-contentArea.BackgroundTransparency = 0.5
+contentArea.Size = UDim2.new(1, -20, 1, -60)
+contentArea.Position = UDim2.new(0, 10, 0, 55)
+contentArea.BackgroundTransparency = 1
 contentArea.BorderSizePixel = 0
+contentArea.ScrollBarThickness = 4
+contentArea.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
+contentArea.CanvasSize = UDim2.new(0, 0, 0, 150)
 contentArea.Parent = mainFrame
 
-local contentCorner = Instance.new("UICorner")
-contentCorner.CornerRadius = UDim.new(0, 15)
-contentCorner.Parent = contentArea
-
--- Container para as abas
-local tabContainer = Instance.new("ScrollingFrame")
-tabContainer.Size = UDim2.new(1, -20, 1, -20)
-tabContainer.Position = UDim2.new(0, 10, 0, 10)
-tabContainer.BackgroundTransparency = 1
-tabContainer.BorderSizePixel = 0
-tabContainer.ScrollBarThickness = 4
-tabContainer.ScrollBarImageColor3 = COLORS.Accent
-tabContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
-tabContainer.Parent = contentArea
-
--- ============================================
--- FUNÇÕES PARA ALTERNAR ABAS
--- ============================================
-local function clearTabs()
-    for _, btn in pairs(tabButtons) do
-        btn.BackgroundTransparency = 0.5
-        btn.TextColor3 = COLORS.TextDim
-    end
-    tabContainer:ClearAllChildren()
-end
-
-local function showTab(tabName)
-    clearTabs()
-    
-    if tabName == "Farm" then
-        tabButtons["Farm"].BackgroundTransparency = 0
-        tabButtons["Farm"].TextColor3 = COLORS.Accent
-        criarAbaFarm()
-    elseif tabName == "ESP Beta" then
-        tabButtons["ESP Beta"].BackgroundTransparency = 0
-        tabButtons["ESP Beta"].TextColor3 = COLORS.Accent
-        criarAbaESP()
-    elseif tabName == "Início" then
-        tabButtons["Início"].BackgroundTransparency = 0
-        tabButtons["Início"].TextColor3 = COLORS.Accent
-        criarAbaInicio()
-    end
-end
-
--- ============================================
--- ABA INÍCIO
--- ============================================
-local function criarAbaInicio()
-    local welcomeFrame = Instance.new("Frame")
-    welcomeFrame.Size = UDim2.new(1, -20, 0, 150)
-    welcomeFrame.Position = UDim2.new(0, 10, 0, 10)
-    welcomeFrame.BackgroundColor3 = COLORS.Primary
-    welcomeFrame.BackgroundTransparency = 0.3
-    welcomeFrame.BorderSizePixel = 0
-    welcomeFrame.Parent = tabContainer
-    
-    local welcomeCorner = Instance.new("UICorner")
-    welcomeCorner.CornerRadius = UDim.new(0, 15)
-    welcomeCorner.Parent = welcomeFrame
-    
-    local welcomeTitle = Instance.new("TextLabel")
-    welcomeTitle.Size = UDim2.new(1, -20, 0, 40)
-    welcomeTitle.Position = UDim2.new(0, 10, 0, 10)
-    welcomeTitle.BackgroundTransparency = 1
-    welcomeTitle.Text = "Bem-vindo ao NCHUB PRO"
-    welcomeTitle.TextColor3 = COLORS.Text
-    welcomeTitle.Font = Enum.Font.GothamBold
-    welcomeTitle.TextSize = 22
-    welcomeTitle.TextXAlignment = Enum.TextXAlignment.Left
-    welcomeTitle.Parent = welcomeFrame
-    
-    local welcomeDesc = Instance.new("TextLabel")
-    welcomeDesc.Size = UDim2.new(1, -20, 0, 60)
-    welcomeDesc.Position = UDim2.new(0, 10, 0, 50)
-    welcomeDesc.BackgroundTransparency = 1
-    welcomeDesc.Text = "Selecione uma aba ao lado para começar.\nFarm: Coleta automática de moedas\nESP Beta: Visualização de jogadores e armas"
-    welcomeDesc.TextColor3 = COLORS.TextDim
-    welcomeDesc.Font = Enum.Font.Gotham
-    welcomeDesc.TextSize = 16
-    welcomeDesc.TextXAlignment = Enum.TextXAlignment.Left
-    welcomeDesc.TextYAlignment = Enum.TextYAlignment.Top
-    welcomeDesc.Parent = welcomeFrame
-    
-    local statsFrame = Instance.new("Frame")
-    statsFrame.Size = UDim2.new(1, -20, 0, 100)
-    statsFrame.Position = UDim2.new(0, 10, 0, 170)
-    statsFrame.BackgroundColor3 = COLORS.Primary
-    statsFrame.BackgroundTransparency = 0.3
-    statsFrame.BorderSizePixel = 0
-    statsFrame.Parent = tabContainer
-    
-    local statsCorner = Instance.new("UICorner")
-    statsCorner.CornerRadius = UDim.new(0, 15)
-    statsCorner.Parent = statsFrame
-    
-    local statsTitle = Instance.new("TextLabel")
-    statsTitle.Size = UDim2.new(1, -20, 0, 30)
-    statsTitle.Position = UDim2.new(0, 10, 0, 10)
-    statsTitle.BackgroundTransparency = 1
-    statsTitle.Text = "📊 Estatísticas"
-    statsTitle.TextColor3 = COLORS.Text
-    statsTitle.Font = Enum.Font.GothamBold
-    statsTitle.TextSize = 18
-    statsTitle.TextXAlignment = Enum.TextXAlignment.Left
-    statsTitle.Parent = statsFrame
-    
-    local playerCount = Instance.new("TextLabel")
-    playerCount.Size = UDim2.new(1, -20, 0, 25)
-    playerCount.Position = UDim2.new(0, 10, 0, 45)
-    playerCount.BackgroundTransparency = 1
-    playerCount.Text = "👥 Jogadores: " .. #Players:GetPlayers()
-    playerCount.TextColor3 = COLORS.TextDim
-    playerCount.Font = Enum.Font.Gotham
-    playerCount.TextSize = 16
-    playerCount.TextXAlignment = Enum.TextXAlignment.Left
-    playerCount.Parent = statsFrame
-    
-    tabContainer.CanvasSize = UDim2.new(0, 0, 0, 300)
-end
-
--- ============================================
--- ABA FARM (MODERNA)
--- ============================================
-local TweenServiceFarm = TweenService
-local isFarming = false
-local Char = LP.Character or LP.CharacterAdded:Wait()
-local HRP = Char:WaitForChild("HumanoidRootPart")
-local Humanoid = Char:WaitForChild("Humanoid")
-local coinsCollected = 0
-
-local function criarAbaFarm()
-    local farmFrame = Instance.new("Frame")
-    farmFrame.Size = UDim2.new(1, -20, 0, 200)
-    farmFrame.Position = UDim2.new(0, 10, 0, 10)
-    farmFrame.BackgroundColor3 = COLORS.Primary
-    farmFrame.BackgroundTransparency = 0.3
-    farmFrame.BorderSizePixel = 0
-    farmFrame.Parent = tabContainer
-    
-    local farmCorner = Instance.new("UICorner")
-    farmCorner.CornerRadius = UDim.new(0, 15)
-    farmCorner.Parent = farmFrame
-    
-    local farmTitle = Instance.new("TextLabel")
-    farmTitle.Size = UDim2.new(1, -20, 0, 40)
-    farmTitle.Position = UDim2.new(0, 10, 0, 10)
-    farmTitle.BackgroundTransparency = 1
-    farmTitle.Text = "🌾 FARM AFK PREMIUM"
-    farmTitle.TextColor3 = COLORS.Text
-    farmTitle.Font = Enum.Font.GothamBold
-    farmTitle.TextSize = 20
-    farmTitle.TextXAlignment = Enum.TextXAlignment.Left
-    farmTitle.Parent = farmFrame
-    
-    local farmStatus = Instance.new("TextLabel")
-    farmStatus.Name = "FarmStatus"
-    farmStatus.Size = UDim2.new(1, -20, 0, 30)
-    farmStatus.Position = UDim2.new(0, 10, 0, 50)
-    farmStatus.BackgroundTransparency = 1
-    farmStatus.Text = "⚪ Status: Parado"
-    farmStatus.TextColor3 = COLORS.TextDim
-    farmStatus.Font = Enum.Font.Gotham
-    farmStatus.TextSize = 16
-    farmStatus.TextXAlignment = Enum.TextXAlignment.Left
-    farmStatus.Parent = farmFrame
-    
-    local coinCounter = Instance.new("TextLabel")
-    coinCounter.Name = "CoinCounter"
-    coinCounter.Size = UDim2.new(1, -20, 0, 30)
-    coinCounter.Position = UDim2.new(0, 10, 0, 80)
-    coinCounter.BackgroundTransparency = 1
-    coinCounter.Text = "💰 Moedas coletadas: 0"
-    coinCounter.TextColor3 = COLORS.TextDim
-    coinCounter.Font = Enum.Font.Gotham
-    coinCounter.TextSize = 16
-    coinCounter.TextXAlignment = Enum.TextXAlignment.Left
-    coinCounter.Parent = farmFrame
-    
-    local farmButton = Instance.new("TextButton")
-    farmButton.Size = UDim2.new(0, 200, 0, 45)
-    farmButton.Position = UDim2.new(0.5, -100, 0, 130)
-    farmButton.BackgroundColor3 = COLORS.Success
-    farmButton.Text = "INICIAR FARM"
-    farmButton.TextColor3 = COLORS.Text
-    farmButton.Font = Enum.Font.GothamBold
-    farmButton.TextSize = 18
-    farmButton.Parent = farmFrame
-    
-    local farmButtonCorner = Instance.new("UICorner")
-    farmButtonCorner.CornerRadius = UDim.new(0, 12)
-    farmButtonCorner.Parent = farmButton
-    
-    -- Funções do Farm
-    local function encontrarMoedaMaisProxima()
-        local mapa = nil
-        for _, obj in ipairs(workspace:GetChildren()) do
-            if obj:FindFirstChild("CoinContainer") or obj:FindFirstChild("Coins") then
-                mapa = obj
-                break
-            end
-        end
-        
-        if not mapa then return nil end
-        
-        local container = mapa:FindFirstChild("CoinContainer") or mapa:FindFirstChild("Coins")
-        if not container then return nil end
-        
-        local moedaMaisProxima = nil
-        local menorDistancia = math.huge
-        
-        for _, moeda in ipairs(container:GetChildren()) do
-            local visual = moeda:FindFirstChild("CoinVisual")
-            if visual and not visual:GetAttribute("Collected") then
-                local distancia = (HRP.Position - moeda.Position).Magnitude
-                if distancia < menorDistancia then
-                    moedaMaisProxima = moeda
-                    menorDistancia = distancia
-                end
-            end
-        end
-        
-        return moedaMaisProxima
-    end
-    
-    local function irAteMoeda(moeda)
-        if not moeda or not HRP or not Humanoid then return false end
-        
-        Humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-        
-        local distancia = (HRP.Position - moeda.Position).Magnitude
-        local tempoViagem = distancia / 35 -- Velocidade ajustada
-        
-        local tween = TweenServiceFarm:Create(
-            HRP, 
-            TweenInfo.new(tempoViagem, Enum.EasingStyle.Linear),
-            {CFrame = moeda.CFrame}
-        )
-        
-        tween:Play()
-        tween.Completed:Wait()
-        
-        Humanoid:ChangeState(Enum.HumanoidStateType.Running)
-        return true
-    end
-    
-    local function atualizarInterfaceFarm()
-        if isFarming then
-            farmButton.BackgroundColor3 = COLORS.Danger
-            farmButton.Text = "PARAR FARM"
-            farmStatus.Text = "🟢 Status: Coletando moedas..."
-            farmStatus.TextColor3 = COLORS.Success
-        else
-            farmButton.BackgroundColor3 = COLORS.Success
-            farmButton.Text = "INICIAR FARM"
-            farmStatus.Text = "⚪ Status: Parado"
-            farmStatus.TextColor3 = COLORS.TextDim
-        end
-        coinCounter.Text = "💰 Moedas coletadas: " .. coinsCollected
-    end
-    
-    farmButton.MouseButton1Click:Connect(function()
-        isFarming = not isFarming
-        atualizarInterfaceFarm()
-    end)
-    
-    -- Loop do Farm
-    spawn(function()
-        while true do
-            if isFarming then
-                if LP.Character and LP.Character:FindFirstChild("Humanoid") and LP.Character.Humanoid.Health > 0 then
-                    local moeda = encontrarMoedaMaisProxima()
-                    
-                    if moeda then
-                        local sucesso = irAteMoeda(moeda)
-                        
-                        if sucesso then
-                            local visual = moeda:FindFirstChild("CoinVisual")
-                            if visual then
-                                repeat
-                                    task.wait(0.1)
-                                until not visual.Parent or visual:GetAttribute("Collected")
-                                coinsCollected = coinsCollected + 1
-                                coinCounter.Text = "💰 Moedas coletadas: " .. coinsCollected
-                            end
-                        end
-                    else
-                        farmStatus.Text = "🟡 Status: Procurando moedas..."
-                        task.wait(0.5)
-                    end
-                else
-                    farmStatus.Text = "🔴 Status: Morto - Aguardando..."
-                    farmStatus.TextColor3 = COLORS.Danger
-                    task.wait(1)
-                end
-            else
-                task.wait(0.1)
-            end
-        end
-    end)
-    
-    LP.CharacterAdded:Connect(function(novoChar)
-        Char = novoChar
-        HRP = Char:WaitForChild("HumanoidRootPart")
-        Humanoid = Char:WaitForChild("Humanoid")
-    end)
-    
-    tabContainer.CanvasSize = UDim2.new(0, 0, 0, 250)
-end
-
--- ============================================
--- ABA ESP BETA
--- ============================================
-local function criarAbaESP()
-    -- Título com badge BETA
-    local espHeader = Instance.new("Frame")
-    espHeader.Size = UDim2.new(1, -20, 0, 60)
-    espHeader.Position = UDim2.new(0, 10, 0, 10)
-    espHeader.BackgroundColor3 = COLORS.Primary
-    espHeader.BackgroundTransparency = 0.3
-    espHeader.BorderSizePixel = 0
-    espHeader.Parent = tabContainer
-    
-    local headerCorner = Instance.new("UICorner")
-    headerCorner.CornerRadius = UDim.new(0, 15)
-    headerCorner.Parent = espHeader
-    
-    local espTitle = Instance.new("TextLabel")
-    espTitle.Size = UDim2.new(0, 200, 1, 0)
-    espTitle.Position = UDim2.new(0, 15, 0, 0)
-    espTitle.BackgroundTransparency = 1
-    espTitle.Text = "👁️ ESP BETA"
-    espTitle.TextColor3 = COLORS.Text
-    espTitle.Font = Enum.Font.GothamBold
-    espTitle.TextSize = 24
-    espTitle.TextXAlignment = Enum.TextXAlignment.Left
-    espTitle.Parent = espHeader
-    
-    local betaBadge = Instance.new("Frame")
-    betaBadge.Size = UDim2.new(0, 60, 0, 25)
-    betaBadge.Position = UDim2.new(0, 220, 0.5, -12.5)
-    betaBadge.BackgroundColor3 = COLORS.Warning
-    betaBadge.BackgroundTransparency = 0.2
-    betaBadge.BorderSizePixel = 0
-    betaBadge.Parent = espHeader
-    
-    local betaCorner = Instance.new("UICorner")
-    betaCorner.CornerRadius = UDim.new(0, 8)
-    betaCorner.Parent = betaBadge
-    
-    local betaText = Instance.new("TextLabel")
-    betaText.Size = UDim2.new(1, 0, 1, 0)
-    betaText.BackgroundTransparency = 1
-    betaText.Text = "BETA"
-    betaText.TextColor3 = COLORS.Primary
-    betaText.Font = Enum.Font.GothamBold
-    betaText.TextSize = 14
-    betaText.Parent = betaBadge
-    
-    -- Container para os botões toggle
-    local togglesFrame = Instance.new("Frame")
-    togglesFrame.Size = UDim2.new(1, -20, 0, 200)
-    togglesFrame.Position = UDim2.new(0, 10, 0, 80)
-    togglesFrame.BackgroundColor3 = COLORS.Primary
-    togglesFrame.BackgroundTransparency = 0.3
-    togglesFrame.BorderSizePixel = 0
-    togglesFrame.Parent = tabContainer
-    
-    local togglesCorner = Instance.new("UICorner")
-    togglesCorner.CornerRadius = UDim.new(0, 15)
-    togglesCorner.Parent = togglesFrame
-    
-    local espStates = {murder = false, sheriff = false, innocent = false, gun = false}
-    
-    local function criarToggle(posY, texto, cor, estado)
-        local toggleFrame = Instance.new("Frame")
-        toggleFrame.Size = UDim2.new(1, -30, 0, 40)
-        toggleFrame.Position = UDim2.new(0, 15, 0, posY)
-        toggleFrame.BackgroundColor3 = COLORS.Secondary
-        toggleFrame.BackgroundTransparency = 0.3
-        toggleFrame.BorderSizePixel = 0
-        toggleFrame.Parent = togglesFrame
-        
-        local toggleCorner = Instance.new("UICorner")
-        toggleCorner.CornerRadius = UDim.new(0, 10)
-        toggleCorner.Parent = toggleFrame
-        
-        local toggleLabel = Instance.new("TextLabel")
-        toggleLabel.Size = UDim2.new(0, 150, 1, 0)
-        toggleLabel.Position = UDim2.new(0, 10, 0, 0)
-        toggleLabel.BackgroundTransparency = 1
-        toggleLabel.Text = texto
-        toggleLabel.TextColor3 = cor
-        toggleLabel.Font = Enum.Font.GothamBold
-        toggleLabel.TextSize = 16
-        toggleLabel.TextXAlignment = Enum.TextXAlignment.Left
-        toggleLabel.Parent = toggleFrame
-        
-        local toggleBtn = Instance.new("TextButton")
-        toggleBtn.Size = UDim2.new(0, 60, 0, 30)
-        toggleBtn.Position = UDim2.new(1, -70, 0.5, -15)
-        toggleBtn.BackgroundColor3 = COLORS.Danger
-        toggleBtn.Text = "OFF"
-        toggleBtn.TextColor3 = COLORS.Text
-        toggleBtn.Font = Enum.Font.GothamBold
-        toggleBtn.TextSize = 14
-        toggleBtn.Parent = toggleFrame
-        
-        local btnCorner = Instance.new("UICorner")
-        btnCorner.CornerRadius = UDim.new(0, 8)
-        btnCorner.Parent = toggleBtn
-        
-        toggleBtn.MouseButton1Click:Connect(function()
-            espStates[estado] = not espStates[estado]
-            if espStates[estado] then
-                toggleBtn.BackgroundColor3 = COLORS.Success
-                toggleBtn.Text = "ON"
-            else
-                toggleBtn.BackgroundColor3 = COLORS.Danger
-                toggleBtn.Text = "OFF"
-            end
-        end)
-    end
-    
-    criarToggle(10, "MURDER", COLORS.Murder, "murder")
-    criarToggle(60, "XERIFE", COLORS.Sheriff, "sheriff")
-    criarToggle(110, "INOCENTE", COLORS.Innocent, "innocent")
-    criarToggle(160, "ARMA DROPADA", COLORS.Gun, "gun")
-    
-    -- Funções do ESP
-    local function getRole(player)
-        local char = player.Character
-        local bp = player:FindFirstChild("Backpack")
-        
-        local function hasItem(container, names)
-            if not container then return false end
-            for _, item in pairs(container:GetChildren()) do
-                if item:IsA("Tool") then
-                    local n = item.Name:lower()
-                    for _, name in pairs(names) do
-                        if n:find(name) then return true end
-                    end
-                end
-            end
-            return false
-        end
-    
-        if hasItem(char, {"knife", "faca"}) or hasItem(bp, {"knife", "faca"}) then return "Murder" end
-        if hasItem(char, {"gun", "pistol", "revolver"}) or hasItem(bp, {"gun", "pistol", "revolver"}) then return "Sheriff" end
-        return "Innocent"
-    end
-    
-    local function applyHighlight(obj, color, name)
-        local h = obj:FindFirstChild(name)
-        if not h then
-            h = Instance.new("Highlight")
-            h.Name = name
-            h.OutlineColor = Color3.new(1, 1, 1)
-            h.Parent = obj
-        end
-        h.FillColor = color
-        h.FillTransparency = 0.5
-    end
-    
-    -- Loop do ESP
-    spawn(function()
-        while true do
-            -- ESP de Jogadores
-            for _, player in pairs(Players:GetPlayers()) do
-                if player ~= LP and player.Character then
-                    local role = getRole(player)
-                    local stateKey = role:lower()
-                    
-                    if espStates[stateKey] then
-                        applyHighlight(player.Character, COLORS[role], "NCHUB_PlayerESP")
-                    else
-                        local old = player.Character:FindFirstChild("NCHUB_PlayerESP")
-                        if old then old:Destroy() end
-                    end
-                end
-            end
-    
-            -- ESP da Arma Dropada
-            if espStates.gun then
-                for _, obj in pairs(Workspace:GetDescendants()) do
-                    if obj:IsA("Tool") and (obj.Name:lower():find("gun") or obj.Name:lower():find("revolver")) then
-                        if not obj:FindFirstAncestorOfClass("Model") or not Players:GetPlayerFromCharacter(obj.Parent) then
-                            applyHighlight(obj, COLORS.Gun, "NCHUB_GunESP")
-                        else
-                            local old = obj:FindFirstChild("NCHUB_GunESP")
-                            if old then old:Destroy() end
-                        end
-                    end
-                end
-            else
-                for _, obj in pairs(Workspace:GetDescendants()) do
-                    local old = obj:FindFirstChild("NCHUB_GunESP")
-                    if old then old:Destroy() end
-                end
-            end
-            
-            task.wait(0.5)
-        end
-    end)
-    
-    tabContainer.CanvasSize = UDim2.new(0, 0, 0, 320)
-end
-
--- Conectar botões das abas
-tabButtons["Início"].MouseButton1Click:Connect(function() showTab("Início") end)
-tabButtons["Farm"].MouseButton1Click:Connect(function() showTab("Farm") end)
-tabButtons["ESP Beta"].MouseButton1Click:Connect(function() showTab("ESP Beta") end)
-
--- Mostrar aba inicial por padrão
-showTab("Início")
-
--- ============================================
--- FUNÇÕES DA TOP BAR
--- ============================================
--- Minimizar/Maximizar
-local minimized = false
-local originalSize = mainFrame.Size
-local minimizedSize = UDim2.new(0, 700, 0, 50)
-
-minMaxBtn.MouseButton1Click:Connect(function()
-    minimized = not minimized
-    if minimized then
-        mainFrame:TweenSize(minimizedSize, "Out", "Quad", 0.3, true)
-        minMaxBtn.Text = "+"
-        sidebar.Visible = false
-        contentArea.Visible = false
-    else
-        mainFrame:TweenSize(originalSize, "Out", "Quad", 0.3, true)
-        minMaxBtn.Text = "−"
-        sidebar.Visible = true
-        contentArea.Visible = true
-    end
-end)
-
--- Fechar
-closeBtn.MouseButton1Click:Connect(function()
-    mainFrame:TweenPosition(UDim2.new(0.5, -350, 1.5, 0), "Out", "Back", 0.5, true)
-    task.wait(0.5)
-    screenGui:Destroy()
-end)
-
--- Configurações
-settingsBtn.MouseButton1Click:Connect(function()
-    print("Configurações - Em desenvolvimento")
-end)
-
--- Ajuda
-helpBtn.MouseButton1Click:Connect(function()
-    print("NCHUB PRO v2.0 - Use as abas laterais para navegar")
-end)
-
--- ============================================
--- DRAGGABLE
--- ============================================
+-- Dragging
 local dragging = false
 local dragStart
 local startPos
@@ -883,18 +222,427 @@ topBar.InputEnded:Connect(function(input)
     end
 end)
 
-UserInputService.InputChanged:Connect(function(input)
+game:GetService("UserInputService").InputChanged:Connect(function(input)
     if dragging then
         if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
             local delta = input.Position - dragStart
-            mainFrame.Position = UDim2.new(
-                startPos.X.Scale, 
-                startPos.X.Offset + delta.X,
-                startPos.Y.Scale, 
-                startPos.Y.Offset + delta.Y
-            )
+            mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
         end
     end
 end)
 
-print("✅ NCHUB PRO carregado com sucesso!")
+-- Fechar
+closeBtn.MouseButton1Click:Connect(function() screenGui:Destroy() end)
+closeBtn.TouchTap:Connect(function() screenGui:Destroy() end)
+
+-- Minimizar/Maximizar (reduz o GUI todo)
+local minimized = false
+local originalSize = mainFrame.Size
+local minimizedSize = UDim2.new(0, 420, 0, 45) -- Só top bar visível
+
+minMaxBtn.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    if minimized then
+        mainFrame:TweenSize(minimizedSize, "Out", "Quad", 0.2, true)
+        minMaxBtn.Text = "+"
+        contentArea.Visible = false
+    else
+        mainFrame:TweenSize(originalSize, "Out", "Quad", 0.2, true)
+        minMaxBtn.Text = "−"
+        contentArea.Visible = true
+    end
+end)
+
+-- Config e Ajuda
+configBtn.MouseButton1Click:Connect(function()
+    print("Abrir configurações")
+end)
+
+helpBtn.MouseButton1Click:Connect(function()
+    print("Ajuda - NCHUB v1.0")
+end)
+
+-- ============================================
+-- ABA FARM (SEU SCRIPT INTEGRADO)
+-- ============================================
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local LP = Players.LocalPlayer
+local isFarming = false
+local Char = LP.Character or LP.CharacterAdded:Wait()
+local HRP = Char:WaitForChild("HumanoidRootPart")
+local Humanoid = Char:WaitForChild("Humanoid")
+
+-- Criar aba Farm
+local farmTab = Instance.new("Frame")
+farmTab.Name = "FarmTab"
+farmTab.Size = UDim2.new(1, -20, 0, 120)
+farmTab.Position = UDim2.new(0, 10, 0, 10)
+farmTab.BackgroundColor3 = Color3.fromRGB(30, 30, 38)
+farmTab.BackgroundTransparency = 0.3
+farmTab.BorderSizePixel = 0
+farmTab.Parent = contentArea
+
+local farmTabCorner = Instance.new("UICorner")
+farmTabCorner.CornerRadius = UDim.new(0, 12)
+farmTabCorner.Parent = farmTab
+
+-- Título da aba
+local farmTitle = Instance.new("TextLabel")
+farmTitle.Size = UDim2.new(1, -20, 0, 30)
+farmTitle.Position = UDim2.new(0, 10, 0, 10)
+farmTitle.BackgroundTransparency = 1
+farmTitle.Text = "🌾 FARM AFK"
+farmTitle.TextColor3 = Color3.fromRGB(200, 200, 255)
+farmTitle.Font = Enum.Font.GothamBold
+farmTitle.TextSize = 18
+farmTitle.TextXAlignment = Enum.TextXAlignment.Left
+farmTitle.Parent = farmTab
+
+-- Botão Farm AFK
+local farmButton = Instance.new("TextButton")
+farmButton.Name = "FarmButton"
+farmButton.Size = UDim2.new(0, 150, 0, 40)
+farmButton.Position = UDim2.new(0.5, -75, 0, 50)
+farmButton.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+farmButton.Text = "FARM AFK: OFF"
+farmButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+farmButton.Font = Enum.Font.GothamBold
+farmButton.TextSize = 16
+farmButton.Parent = farmTab
+
+local farmButtonCorner = Instance.new("UICorner")
+farmButtonCorner.CornerRadius = UDim.new(0, 8)
+farmButtonCorner.Parent = farmButton
+
+-- Status do Farm
+local farmStatus = Instance.new("TextLabel")
+farmStatus.Size = UDim2.new(1, -20, 0, 25)
+farmStatus.Position = UDim2.new(0, 10, 0, 95)
+farmStatus.BackgroundTransparency = 1
+farmStatus.Text = "⏸️ Parado"
+farmStatus.TextColor3 = Color3.fromRGB(150, 150, 150)
+farmStatus.Font = Enum.Font.Gotham
+farmStatus.TextSize = 14
+farmStatus.TextXAlignment = Enum.TextXAlignment.Left
+farmStatus.Parent = farmTab
+
+-- Funções do Farm
+local function encontrarMoedaMaisProxima()
+    local mapa = nil
+    for _, obj in ipairs(workspace:GetChildren()) do
+        if obj:FindFirstChild("CoinContainer") or obj:FindFirstChild("Coins") then
+            mapa = obj
+            break
+        end
+    end
+    
+    if not mapa then return nil end
+    
+    local container = mapa:FindFirstChild("CoinContainer") or mapa:FindFirstChild("Coins")
+    if not container then return nil end
+    
+    local moedaMaisProxima = nil
+    local menorDistancia = math.huge
+    
+    for _, moeda in ipairs(container:GetChildren()) do
+        local visual = moeda:FindFirstChild("CoinVisual")
+        if visual and not visual:GetAttribute("Collected") then
+            local distancia = (HRP.Position - moeda.Position).Magnitude
+            if distancia < menorDistancia then
+                moedaMaisProxima = moeda
+                menorDistancia = distancia
+            end
+        end
+    end
+    
+    return moedaMaisProxima
+end
+
+local function irAteMoeda(moeda)
+    if not moeda or not HRP or not Humanoid then return false end
+    
+    Humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+    
+    local distancia = (HRP.Position - moeda.Position).Magnitude
+    local tempoViagem = distancia / 30
+    
+    local tween = TweenService:Create(
+        HRP, 
+        TweenInfo.new(tempoViagem, Enum.EasingStyle.Linear),
+        {CFrame = moeda.CFrame}
+    )
+    
+    tween:Play()
+    tween.Completed:Wait()
+    
+    Humanoid:ChangeState(Enum.HumanoidStateType.Running)
+    return true
+end
+
+local function atualizarBotaoFarm()
+    if isFarming then
+        farmButton.BackgroundColor3 = Color3.fromRGB(100, 255, 100)
+        farmButton.Text = "FARM AFK: ON"
+        farmStatus.Text = "▶️ Coletando moedas..."
+        farmStatus.TextColor3 = Color3.fromRGB(100, 255, 100)
+    else
+        farmButton.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+        farmButton.Text = "FARM AFK: OFF"
+        farmStatus.Text = "⏸️ Parado"
+        farmStatus.TextColor3 = Color3.fromRGB(150, 150, 150)
+    end
+end
+
+-- Clique no botão Farm
+farmButton.MouseButton1Click:Connect(function()
+    isFarming = not isFarming
+    atualizarBotaoFarm()
+end)
+
+-- Loop principal do Farm
+spawn(function()
+    while true do
+        if isFarming then
+            if LP.Character and LP.Character:FindFirstChild("Humanoid") and LP.Character.Humanoid.Health > 0 then
+                local moeda = encontrarMoedaMaisProxima()
+                
+                if moeda then
+                    local sucesso = irAteMoeda(moeda)
+                    
+                    if sucesso then
+                        local visual = moeda:FindFirstChild("CoinVisual")
+                        if visual then
+                            repeat
+                                task.wait(0.1)
+                            until not visual.Parent or visual:GetAttribute("Collected")
+                        end
+                    end
+                else
+                    farmStatus.Text = "⏳ Procurando moedas..."
+                    task.wait(0.5)
+                end
+            else
+                farmStatus.Text = "💀 Morto - Aguardando respawn..."
+                task.wait(1)
+            end
+        else
+            task.wait(0.1)
+        end
+    end
+end)
+
+-- Atualiza quando o personagem renasce
+LP.CharacterAdded:Connect(function(novoChar)
+    Char = novoChar
+    HRP = Char:WaitForChild("HumanoidRootPart")
+    Humanoid = Char:WaitForChild("Humanoid")
+end)
+
+-- ============================================
+-- ABA ESP BETA (SEU SCRIPT INTEGRADO)
+-- ============================================
+
+-- Cores do ESP
+local CORES_ESP = {
+    Murder = Color3.fromRGB(255, 0, 0),
+    Sheriff = Color3.fromRGB(0, 150, 255),
+    Innocent = Color3.fromRGB(0, 255, 0),
+    GunDrop = Color3.fromRGB(255, 255, 0)
+}
+
+-- Criar aba ESP
+local espTab = Instance.new("Frame")
+espTab.Name = "ESPTab"
+espTab.Size = UDim2.new(1, -20, 0, 200)
+espTab.Position = UDim2.new(0, 10, 0, 140)
+espTab.BackgroundColor3 = Color3.fromRGB(30, 30, 38)
+espTab.BackgroundTransparency = 0.3
+espTab.BorderSizePixel = 0
+espTab.Parent = contentArea
+
+local espTabCorner = Instance.new("UICorner")
+espTabCorner.CornerRadius = UDim.new(0, 12)
+espTabCorner.Parent = espTab
+
+-- Título da aba ESP com badge BETA
+local espTitle = Instance.new("TextLabel")
+espTitle.Size = UDim2.new(0, 100, 0, 30)
+espTitle.Position = UDim2.new(0, 10, 0, 10)
+espTitle.BackgroundTransparency = 1
+espTitle.Text = "👁️ ESP"
+espTitle.TextColor3 = Color3.fromRGB(200, 200, 255)
+espTitle.Font = Enum.Font.GothamBold
+espTitle.TextSize = 18
+espTitle.TextXAlignment = Enum.TextXAlignment.Left
+espTitle.Parent = espTab
+
+local betaBadge = Instance.new("Frame")
+betaBadge.Size = UDim2.new(0, 50, 0, 20)
+betaBadge.Position = UDim2.new(0, 70, 0, 12)
+betaBadge.BackgroundColor3 = Color3.fromRGB(255, 200, 75)
+betaBadge.BackgroundTransparency = 0.2
+betaBadge.BorderSizePixel = 0
+betaBadge.Parent = espTab
+
+local betaCorner = Instance.new("UICorner")
+betaCorner.CornerRadius = UDim.new(0, 6)
+betaCorner.Parent = betaBadge
+
+local betaText = Instance.new("TextLabel")
+betaText.Size = UDim2.new(1, 0, 1, 0)
+betaText.BackgroundTransparency = 1
+betaText.Text = "BETA"
+betaText.TextColor3 = Color3.fromRGB(20, 20, 28)
+betaText.Font = Enum.Font.GothamBold
+betaText.TextSize = 12
+betaText.Parent = betaBadge
+
+-- Estados do ESP
+local espStates = {murder = false, sheriff = false, innocent = false, gun = false}
+
+-- Função para criar toggles
+local function criarToggleESP(y, texto, cor, stateKey)
+    local toggleFrame = Instance.new("Frame")
+    toggleFrame.Size = UDim2.new(0.9, 0, 0, 30)
+    toggleFrame.Position = UDim2.new(0.05, 0, 0, y)
+    toggleFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+    toggleFrame.BackgroundTransparency = 0.3
+    toggleFrame.BorderSizePixel = 0
+    toggleFrame.Parent = espTab
+    
+    local toggleCorner = Instance.new("UICorner")
+    toggleCorner.CornerRadius = UDim.new(0, 6)
+    toggleCorner.Parent = toggleFrame
+    
+    local toggleLabel = Instance.new("TextLabel")
+    toggleLabel.Size = UDim2.new(0, 100, 1, 0)
+    toggleLabel.Position = UDim2.new(0, 10, 0, 0)
+    toggleLabel.BackgroundTransparency = 1
+    toggleLabel.Text = texto
+    toggleLabel.TextColor3 = cor
+    toggleLabel.Font = Enum.Font.GothamBold
+    toggleLabel.TextSize = 14
+    toggleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    toggleLabel.Parent = toggleFrame
+    
+    local toggleBtn = Instance.new("TextButton")
+    toggleBtn.Size = UDim2.new(0, 50, 0, 22)
+    toggleBtn.Position = UDim2.new(1, -60, 0.5, -11)
+    toggleBtn.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+    toggleBtn.Text = "OFF"
+    toggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    toggleBtn.Font = Enum.Font.GothamBold
+    toggleBtn.TextSize = 12
+    toggleBtn.Parent = toggleFrame
+    
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 4)
+    btnCorner.Parent = toggleBtn
+    
+    toggleBtn.MouseButton1Click:Connect(function()
+        espStates[stateKey] = not espStates[stateKey]
+        if espStates[stateKey] then
+            toggleBtn.BackgroundColor3 = Color3.fromRGB(100, 255, 100)
+            toggleBtn.Text = "ON"
+        else
+            toggleBtn.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+            toggleBtn.Text = "OFF"
+        end
+    end)
+end
+
+criarToggleESP(45, "MURDER", CORES_ESP.Murder, "murder")
+criarToggleESP(80, "XERIFE", CORES_ESP.Sheriff, "sheriff")
+criarToggleESP(115, "INOCENTE", CORES_ESP.Innocent, "innocent")
+criarToggleESP(150, "ARMA DROPADA", CORES_ESP.GunDrop, "gun")
+
+-- Funções do ESP
+local function getRole(player)
+    local char = player.Character
+    local bp = player:FindFirstChild("Backpack")
+    
+    local function hasItem(container, names)
+        if not container then return false end
+        for _, item in pairs(container:GetChildren()) do
+            if item:IsA("Tool") then
+                local n = item.Name:lower()
+                for _, name in pairs(names) do
+                    if n:find(name) then return true end
+                end
+            end
+        end
+        return false
+    end
+
+    if hasItem(char, {"knife", "faca"}) or hasItem(bp, {"knife", "faca"}) then return "Murder" end
+    if hasItem(char, {"gun", "pistol", "revolver"}) or hasItem(bp, {"gun", "pistol", "revolver"}) then return "Sheriff" end
+    return "Innocent"
+end
+
+local function applyHighlight(obj, color, name)
+    local h = obj:FindFirstChild(name)
+    if not h then
+        h = Instance.new("Highlight")
+        h.Name = name
+        h.OutlineColor = Color3.new(1, 1, 1)
+        h.Parent = obj
+    end
+    h.FillColor = color
+    h.FillTransparency = 0.5
+end
+
+-- Loop do ESP
+spawn(function()
+    while true do
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= LP and player.Character then
+                local role = getRole(player)
+                local stateKey = role:lower()
+                
+                if espStates[stateKey] then
+                    applyHighlight(player.Character, CORES_ESP[role], "NCHUB_PlayerESP")
+                else
+                    local old = player.Character:FindFirstChild("NCHUB_PlayerESP")
+                    if old then old:Destroy() end
+                end
+            end
+        end
+
+        if espStates.gun then
+            for _, obj in pairs(Workspace:GetDescendants()) do
+                if obj:IsA("Tool") and (obj.Name:lower():find("gun") or obj.Name:lower():find("revolver")) then
+                    if not obj:FindFirstAncestorOfClass("Model") or not Players:GetPlayerFromCharacter(obj.Parent) then
+                        applyHighlight(obj, CORES_ESP.GunDrop, "NCHUB_GunESP")
+                    else
+                        local old = obj:FindFirstChild("NCHUB_GunESP")
+                        if old then old:Destroy() end
+                    end
+                end
+            end
+        else
+            for _, obj in pairs(Workspace:GetDescendants()) do
+                local old = obj:FindFirstChild("NCHUB_GunESP")
+                if old then old:Destroy() end
+            end
+        end
+        
+        task.wait(0.5)
+    end
+end)
+
+-- Atualizar canvas size
+local function UpdateCanvas()
+    local height = 0
+    for _, v in pairs(contentArea:GetChildren()) do
+        if v:IsA("Frame") then
+            height = height + v.Size.Y.Offset + 15
+        end
+    end
+    contentArea.CanvasSize = UDim2.new(0, 0, 0, height + 20)
+end
+
+UpdateCanvas()
+
+print("✅ NCHUB carregado com aba FARM e ESP BETA!")
