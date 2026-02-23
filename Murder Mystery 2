@@ -1,4 +1,4 @@
--- NCHUB - Sua Biblioteca Personalizável (com implementações profissionais)
+-- NCHUB - Sua Biblioteca Personalizável (com scripts funcionando)
 -- Top bar com tudo, conteúdo livre embaixo
 
 -- Criar tela
@@ -39,11 +39,11 @@ loadingFrame:TweenPosition(UDim2.new(0.5, -75, 1.5, 0), "Out", "Quad", 0.5, true
 task.wait(0.5)
 loadingFrame:Destroy()
 
--- GUI Principal
+-- GUI Principal (TAMANHO ORIGINAL)
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 420, 0, 400) -- Aumentei um pouco pra caber as abas
-mainFrame.Position = UDim2.new(0.5, -210, 0.5, -200)
+mainFrame.Size = UDim2.new(0, 420, 0, 340) -- VOLTEI AO TAMANHO ORIGINAL
+mainFrame.Position = UDim2.new(0.5, -210, 0.5, -170)
 mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
 mainFrame.BorderSizePixel = 0
 mainFrame.ClipsDescendants = true
@@ -200,142 +200,76 @@ helpBtn.MouseButton1Click:Connect(function()
 end)
 
 -- ============================================
--- IMPLEMENTAÇÕES PROFISSIONAS (SEM ALTERAR SEU GUI)
+-- SEU SCRIPT DE AUTO COIN (INTEGRADO)
 -- ============================================
 
-local Players = game:GetService("Players")
+-- Pegar serviços necessários pro farm
 local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
-local Workspace = game:GetService("Workspace")
 local LP = Players.LocalPlayer
 
--- Cores profissionais
-local CORES = {
-    primary = Color3.fromRGB(100, 150, 255),
-    success = Color3.fromRGB(75, 255, 100),
-    danger = Color3.fromRGB(255, 75, 75),
-    warning = Color3.fromRGB(255, 200, 75),
-    murder = Color3.fromRGB(255, 50, 50),
-    sheriff = Color3.fromRGB(50, 150, 255),
-    innocent = Color3.fromRGB(75, 255, 100),
-    gun = Color3.fromRGB(255, 255, 50)
-}
+-- Variáveis principais do farm
+local isRunning = false
+local Char = LP.Character or LP.CharacterAdded:Wait()
+local HRP = Char:WaitForChild("HumanoidRootPart")
+local Humanoid = Char:WaitForChild("Humanoid")
 
--- ============================================
--- SEÇÃO 1: FARM AFK PROFISSIONAL
--- ============================================
+-- Criar frame do Farm dentro do seu GUI
+local farmFrame = Instance.new("Frame")
+farmFrame.Name = "FarmFrame"
+farmFrame.Size = UDim2.new(1, -20, 0, 150)
+farmFrame.Position = UDim2.new(0, 10, 0, 10)
+farmFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 38)
+farmFrame.BackgroundTransparency = 0.3
+farmFrame.BorderSizePixel = 0
+farmFrame.Parent = contentArea
 
-local FarmAFK = {}
-FarmAFK.__index = FarmAFK
+local farmFrameCorner = Instance.new("UICorner")
+farmFrameCorner.CornerRadius = UDim.new(0, 12)
+farmFrameCorner.Parent = farmFrame
 
-function FarmAFK.new()
-    local self = setmetatable({}, FarmAFK)
-    
-    self.isRunning = false
-    self.coinsCollected = 0
-    self.startTime = nil
-    self.Char = LP.Character or LP.CharacterAdded:Wait()
-    self.HRP = self.Char:WaitForChild("HumanoidRootPart")
-    self.Humanoid = self.Char:WaitForChild("Humanoid")
-    
-    self:CreateUI()
-    self:SetupEvents()
-    self:StartLoop()
-    
-    return self
-end
+-- Título do Farm
+local farmTitle = Instance.new("TextLabel")
+farmTitle.Size = UDim2.new(1, -20, 0, 30)
+farmTitle.Position = UDim2.new(0, 10, 0, 10)
+farmTitle.BackgroundTransparency = 1
+farmTitle.Text = "🌾 AUTO FARM"
+farmTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+farmTitle.Font = Enum.Font.GothamBold
+farmTitle.TextSize = 18
+farmTitle.TextXAlignment = Enum.TextXAlignment.Left
+farmTitle.Parent = farmFrame
 
-function FarmAFK:CreateUI()
-    -- Frame principal do Farm
-    self.frame = Instance.new("Frame")
-    self.frame.Name = "FarmFrame"
-    self.frame.Size = UDim2.new(1, -20, 0, 160)
-    self.frame.Position = UDim2.new(0, 10, 0, 10)
-    self.frame.BackgroundColor3 = Color3.fromRGB(30, 30, 38)
-    self.frame.BackgroundTransparency = 0.3
-    self.frame.BorderSizePixel = 0
-    self.frame.Parent = contentArea
-    
-    local frameCorner = Instance.new("UICorner")
-    frameCorner.CornerRadius = UDim.new(0, 12)
-    frameCorner.Parent = self.frame
-    
-    -- Título com ícone
-    local title = Instance.new("TextLabel")
-    title.Size = UDim2.new(1, -20, 0, 35)
-    title.Position = UDim2.new(0, 10, 0, 10)
-    title.BackgroundTransparency = 1
-    title.Text = "🌾 FARM AFK PREMIUM"
-    title.TextColor3 = Color3.fromRGB(255, 255, 255)
-    title.Font = Enum.Font.GothamBold
-    title.TextSize = 18
-    title.TextXAlignment = Enum.TextXAlignment.Left
-    title.Parent = self.frame
-    
-    -- Status
-    self.statusLabel = Instance.new("TextLabel")
-    self.statusLabel.Size = UDim2.new(1, -20, 0, 25)
-    self.statusLabel.Position = UDim2.new(0, 10, 0, 45)
-    self.statusLabel.BackgroundTransparency = 1
-    self.statusLabel.Text = "⚪ Status: Parado"
-    self.statusLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
-    self.statusLabel.Font = Enum.Font.Gotham
-    self.statusLabel.TextSize = 14
-    self.statusLabel.TextXAlignment = Enum.TextXAlignment.Left
-    self.statusLabel.Parent = self.frame
-    
-    -- Contador
-    self.counterLabel = Instance.new("TextLabel")
-    self.counterLabel.Size = UDim2.new(1, -20, 0, 25)
-    self.counterLabel.Position = UDim2.new(0, 10, 0, 70)
-    self.counterLabel.BackgroundTransparency = 1
-    self.counterLabel.Text = "💰 Moedas: 0"
-    self.counterLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    self.counterLabel.Font = Enum.Font.Gotham
-    self.counterLabel.TextSize = 14
-    self.counterLabel.TextXAlignment = Enum.TextXAlignment.Left
-    self.counterLabel.Parent = self.frame
-    
-    -- Botão
-    self.toggleBtn = Instance.new("TextButton")
-    self.toggleBtn.Size = UDim2.new(0, 150, 0, 35)
-    self.toggleBtn.Position = UDim2.new(0.5, -75, 0, 105)
-    self.toggleBtn.BackgroundColor3 = CORES.success
-    self.toggleBtn.Text = "INICIAR FARM"
-    self.toggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    self.toggleBtn.Font = Enum.Font.GothamBold
-    self.toggleBtn.TextSize = 14
-    self.toggleBtn.Parent = self.frame
-    
-    local btnCorner = Instance.new("UICorner")
-    btnCorner.CornerRadius = UDim.new(0, 8)
-    btnCorner.Parent = self.toggleBtn
-    
-    -- Bind do botão
-    self.toggleBtn.MouseButton1Click:Connect(function()
-        self:Toggle()
-    end)
-end
+-- Botão do Farm
+local farmButton = Instance.new("TextButton")
+farmButton.Size = UDim2.new(0, 150, 0, 40)
+farmButton.Position = UDim2.new(0.5, -75, 0, 50)
+farmButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+farmButton.Text = "DESLIGADO"
+farmButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+farmButton.Font = Enum.Font.GothamBold
+farmButton.TextSize = 16
+farmButton.Parent = farmFrame
 
-function FarmAFK:Toggle()
-    self.isRunning = not self.isRunning
-    
-    if self.isRunning then
-        self.startTime = os.clock()
-        self.toggleBtn.BackgroundColor3 = CORES.danger
-        self.toggleBtn.Text = "PARAR FARM"
-        self.statusLabel.Text = "🟢 Status: Coletando moedas..."
-        self.statusLabel.TextColor3 = CORES.success
-    else
-        self.toggleBtn.BackgroundColor3 = CORES.success
-        self.toggleBtn.Text = "INICIAR FARM"
-        self.statusLabel.Text = "⚪ Status: Parado"
-        self.statusLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
-    end
-end
+local farmButtonCorner = Instance.new("UICorner")
+farmButtonCorner.CornerRadius = UDim.new(0, 8)
+farmButtonCorner.Parent = farmButton
 
-function FarmAFK:FindNearestCoin()
+-- Status do Farm
+local farmStatus = Instance.new("TextLabel")
+farmStatus.Size = UDim2.new(1, -20, 0, 25)
+farmStatus.Position = UDim2.new(0, 10, 0, 100)
+farmStatus.BackgroundTransparency = 1
+farmStatus.Text = "⏸️ Parado"
+farmStatus.TextColor3 = Color3.fromRGB(150, 150, 150)
+farmStatus.Font = Enum.Font.Gotham
+farmStatus.TextSize = 14
+farmStatus.TextXAlignment = Enum.TextXAlignment.Left
+farmStatus.Parent = farmFrame
+
+-- Funções do Farm (EXATAMENTE como no seu script)
+local function encontrarMoedaMaisProxima()
     local mapa = nil
     for _, obj in ipairs(workspace:GetChildren()) do
         if obj:FindFirstChild("CoinContainer") or obj:FindFirstChild("Coins") then
@@ -349,218 +283,223 @@ function FarmAFK:FindNearestCoin()
     local container = mapa:FindFirstChild("CoinContainer") or mapa:FindFirstChild("Coins")
     if not container then return nil end
     
-    local nearest = nil
-    local minDist = math.huge
+    local moedaMaisProxima = nil
+    local menorDistancia = math.huge
     
-    for _, coin in ipairs(container:GetChildren()) do
-        local visual = coin:FindFirstChild("CoinVisual")
+    for _, moeda in ipairs(container:GetChildren()) do
+        local visual = moeda:FindFirstChild("CoinVisual")
         if visual and not visual:GetAttribute("Collected") then
-            local dist = (self.HRP.Position - coin.Position).Magnitude
-            if dist < minDist then
-                nearest = coin
-                minDist = dist
+            local distancia = (HRP.Position - moeda.Position).Magnitude
+            if distancia < menorDistancia then
+                moedaMaisProxima = moeda
+                menorDistancia = distancia
             end
         end
     end
     
-    return nearest
+    return moedaMaisProxima
 end
 
-function FarmAFK:MoveToCoin(coin)
-    if not coin or not self.HRP or not self.Humanoid then return false end
+local function irAteMoeda(moeda)
+    if not moeda or not HRP or not Humanoid then return end
     
-    self.Humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+    Humanoid:ChangeState(Enum.HumanoidStateType.Physics)
     
-    local distance = (self.HRP.Position - coin.Position).Magnitude
-    local travelTime = distance / 35
+    local distancia = (HRP.Position - moeda.Position).Magnitude
+    local tempoViagem = distancia / 30 -- Velocidade 30
     
     local tween = TweenService:Create(
-        self.HRP, 
-        TweenInfo.new(travelTime, Enum.EasingStyle.Linear),
-        {CFrame = coin.CFrame}
+        HRP, 
+        TweenInfo.new(tempoViagem, Enum.EasingStyle.Linear),
+        {CFrame = moeda.CFrame}
     )
     
     tween:Play()
     tween.Completed:Wait()
     
-    self.Humanoid:ChangeState(Enum.HumanoidStateType.Running)
-    return true
+    Humanoid:ChangeState(Enum.HumanoidStateType.Running)
 end
 
-function FarmAFK:SetupEvents()
-    LP.CharacterAdded:Connect(function(newChar)
-        self.Char = newChar
-        self.HRP = newChar:WaitForChild("HumanoidRootPart")
-        self.Humanoid = newChar:WaitForChild("Humanoid")
-    end)
+-- Atualizar botão
+local function atualizarBotao()
+    if isRunning then
+        farmButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+        farmButton.Text = "LIGADO"
+        farmStatus.Text = "▶️ Coletando moedas..."
+        farmStatus.TextColor3 = Color3.fromRGB(0, 255, 0)
+    else
+        farmButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+        farmButton.Text = "DESLIGADO"
+        farmStatus.Text = "⏸️ Parado"
+        farmStatus.TextColor3 = Color3.fromRGB(150, 150, 150)
+    end
 end
 
-function FarmAFK:StartLoop()
-    spawn(function()
-        while true do
-            if self.isRunning then
-                if LP.Character and LP.Character:FindFirstChild("Humanoid") and LP.Character.Humanoid.Health > 0 then
-                    local coin = self:FindNearestCoin()
-                    
-                    if coin then
-                        local success = self:MoveToCoin(coin)
-                        
-                        if success then
-                            local visual = coin:FindFirstChild("CoinVisual")
-                            if visual then
-                                repeat
-                                    task.wait(0.1)
-                                until not visual.Parent or visual:GetAttribute("Collected")
-                                
-                                self.coinsCollected = self.coinsCollected + 1
-                                self.counterLabel.Text = "💰 Moedas: " .. self.coinsCollected
-                            end
-                        end
-                    else
-                        self.statusLabel.Text = "⏳ Status: Procurando moedas..."
-                        task.wait(0.5)
-                    end
-                else
-                    self.statusLabel.Text = "💀 Status: Morto - Aguardando..."
-                    self.statusLabel.TextColor3 = CORES.danger
-                    task.wait(1)
+-- Clique no botão
+farmButton.MouseButton1Click:Connect(function()
+    isRunning = not isRunning
+    atualizarBotao()
+end)
+
+-- Tecla T para ligar/desligar (funciona globalmente)
+UserInputService.InputBegan:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.T then
+        isRunning = not isRunning
+        atualizarBotao()
+    end
+end)
+
+-- Loop principal de coleta
+spawn(function()
+    while true do
+        if isRunning then
+            local moeda = encontrarMoedaMaisProxima()
+            
+            if moeda then
+                irAteMoeda(moeda)
+                
+                local visual = moeda:FindFirstChild("CoinVisual")
+                if visual then
+                    repeat
+                        task.wait(0.1)
+                    until not visual.Parent or visual:GetAttribute("Collected")
                 end
             else
-                task.wait(0.1)
+                farmStatus.Text = "⏳ Procurando moedas..."
+                task.wait(0.5)
             end
+        else
+            task.wait(0.1)
         end
-    end)
-end
+    end
+end)
+
+-- Atualiza quando o personagem renasce
+LP.CharacterAdded:Connect(function(novoChar)
+    Char = novoChar
+    HRP = Char:WaitForChild("HumanoidRootPart")
+    Humanoid = Char:WaitForChild("Humanoid")
+end)
 
 -- ============================================
--- SEÇÃO 2: ESP BETA PROFISSIONAL
+-- SEU SCRIPT DE ESP (VERSÃO SIMPLES)
 -- ============================================
 
-local ESPBeta = {}
-ESPBeta.__index = ESPBeta
+local CORES_ESP = {
+    Murder = Color3.fromRGB(255, 0, 0),
+    Sheriff = Color3.fromRGB(0, 150, 255),
+    Innocent = Color3.fromRGB(0, 255, 0),
+    GunDrop = Color3.fromRGB(255, 255, 0)
+}
 
-function ESPBeta.new()
-    local self = setmetatable({}, ESPBeta)
-    
-    self.states = {
-        murder = false,
-        sheriff = false,
-        innocent = false,
-        gun = false
-    }
-    
-    self:CreateUI()
-    self:StartLoop()
-    
-    return self
-end
+-- Criar frame do ESP
+local espFrame = Instance.new("Frame")
+espFrame.Name = "ESPFrame"
+espFrame.Size = UDim2.new(1, -20, 0, 200)
+espFrame.Position = UDim2.new(0, 10, 0, 175)
+espFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 38)
+espFrame.BackgroundTransparency = 0.3
+espFrame.BorderSizePixel = 0
+espFrame.Parent = contentArea
 
-function ESPBeta:CreateUI()
-    -- Frame principal do ESP
-    self.frame = Instance.new("Frame")
-    self.frame.Name = "ESPFrame"
-    self.frame.Size = UDim2.new(1, -20, 0, 200)
-    self.frame.Position = UDim2.new(0, 10, 0, 180)
-    self.frame.BackgroundColor3 = Color3.fromRGB(30, 30, 38)
-    self.frame.BackgroundTransparency = 0.3
-    self.frame.BorderSizePixel = 0
-    self.frame.Parent = contentArea
-    
-    local frameCorner = Instance.new("UICorner")
-    frameCorner.CornerRadius = UDim.new(0, 12)
-    frameCorner.Parent = self.frame
-    
-    -- Título com badge BETA
-    local title = Instance.new("TextLabel")
-    title.Size = UDim2.new(0, 80, 0, 35)
-    title.Position = UDim2.new(0, 10, 0, 10)
-    title.BackgroundTransparency = 1
-    title.Text = "👁️ ESP"
-    title.TextColor3 = Color3.fromRGB(255, 255, 255)
-    title.Font = Enum.Font.GothamBold
-    title.TextSize = 18
-    title.TextXAlignment = Enum.TextXAlignment.Left
-    title.Parent = self.frame
-    
-    local betaBadge = Instance.new("Frame")
-    betaBadge.Size = UDim2.new(0, 45, 0, 20)
-    betaBadge.Position = UDim2.new(0, 90, 0, 15)
-    betaBadge.BackgroundColor3 = CORES.warning
-    betaBadge.BackgroundTransparency = 0.2
-    betaBadge.BorderSizePixel = 0
-    betaBadge.Parent = self.frame
-    
-    local badgeCorner = Instance.new("UICorner")
-    badgeCorner.CornerRadius = UDim.new(0, 6)
-    badgeCorner.Parent = betaBadge
-    
-    local badgeText = Instance.new("TextLabel")
-    badgeText.Size = UDim2.new(1, 0, 1, 0)
-    badgeText.BackgroundTransparency = 1
-    badgeText.Text = "BETA"
-    badgeText.TextColor3 = Color3.fromRGB(20, 20, 28)
-    badgeText.Font = Enum.Font.GothamBold
-    badgeText.TextSize = 11
-    badgeText.Parent = betaBadge
-    
-    -- Criar toggles
-    self:CreateToggle(45, "MURDER", CORES.murder, "murder")
-    self:CreateToggle(80, "XERIFE", CORES.sheriff, "sheriff")
-    self:CreateToggle(115, "INOCENTE", CORES.innocent, "innocent")
-    self:CreateToggle(150, "ARMA DROPADA", CORES.gun, "gun")
-end
+local espFrameCorner = Instance.new("UICorner")
+espFrameCorner.CornerRadius = UDim.new(0, 12)
+espFrameCorner.Parent = espFrame
 
-function ESPBeta:CreateToggle(y, text, color, stateKey)
+-- Título do ESP com badge
+local espTitle = Instance.new("TextLabel")
+espTitle.Size = UDim2.new(0, 80, 0, 30)
+espTitle.Position = UDim2.new(0, 10, 0, 10)
+espTitle.BackgroundTransparency = 1
+espTitle.Text = "👁️ ESP"
+espTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+espTitle.Font = Enum.Font.GothamBold
+espTitle.TextSize = 18
+espTitle.TextXAlignment = Enum.TextXAlignment.Left
+espTitle.Parent = espFrame
+
+local betaBadge = Instance.new("Frame")
+betaBadge.Size = UDim2.new(0, 45, 0, 20)
+betaBadge.Position = UDim2.new(0, 90, 0, 15)
+betaBadge.BackgroundColor3 = Color3.fromRGB(255, 200, 75)
+betaBadge.BackgroundTransparency = 0.2
+betaBadge.BorderSizePixel = 0
+betaBadge.Parent = espFrame
+
+local badgeCorner = Instance.new("UICorner")
+badgeCorner.CornerRadius = UDim.new(0, 6)
+badgeCorner.Parent = betaBadge
+
+local badgeText = Instance.new("TextLabel")
+badgeText.Size = UDim2.new(1, 0, 1, 0)
+badgeText.BackgroundTransparency = 1
+badgeText.Text = "BETA"
+badgeText.TextColor3 = Color3.fromRGB(20, 20, 28)
+badgeText.Font = Enum.Font.GothamBold
+badgeText.TextSize = 11
+badgeText.Parent = betaBadge
+
+-- Estados do ESP
+local espStates = {murder = false, sheriff = false, innocent = false, gun = false}
+
+-- Função para criar toggles
+local function criarToggleESP(y, texto, cor, stateKey)
     local toggleFrame = Instance.new("Frame")
     toggleFrame.Size = UDim2.new(0.9, 0, 0, 30)
     toggleFrame.Position = UDim2.new(0.05, 0, 0, y)
     toggleFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
     toggleFrame.BackgroundTransparency = 0.3
     toggleFrame.BorderSizePixel = 0
-    toggleFrame.Parent = self.frame
+    toggleFrame.Parent = espFrame
     
     local toggleCorner = Instance.new("UICorner")
     toggleCorner.CornerRadius = UDim.new(0, 6)
     toggleCorner.Parent = toggleFrame
     
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(0, 100, 1, 0)
-    label.Position = UDim2.new(0, 10, 0, 0)
-    label.BackgroundTransparency = 1
-    label.Text = text
-    label.TextColor3 = color
-    label.Font = Enum.Font.GothamBold
-    label.TextSize = 13
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    label.Parent = toggleFrame
+    local toggleLabel = Instance.new("TextLabel")
+    toggleLabel.Size = UDim2.new(0, 100, 1, 0)
+    toggleLabel.Position = UDim2.new(0, 10, 0, 0)
+    toggleLabel.BackgroundTransparency = 1
+    toggleLabel.Text = texto
+    toggleLabel.TextColor3 = cor
+    toggleLabel.Font = Enum.Font.GothamBold
+    toggleLabel.TextSize = 13
+    toggleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    toggleLabel.Parent = toggleFrame
     
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0, 45, 0, 22)
-    btn.Position = UDim2.new(1, -55, 0.5, -11)
-    btn.BackgroundColor3 = CORES.danger
-    btn.Text = "OFF"
-    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 11
-    btn.Parent = toggleFrame
+    local toggleBtn = Instance.new("TextButton")
+    toggleBtn.Size = UDim2.new(0, 45, 0, 22)
+    toggleBtn.Position = UDim2.new(1, -55, 0.5, -11)
+    toggleBtn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    toggleBtn.Text = "OFF"
+    toggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    toggleBtn.Font = Enum.Font.GothamBold
+    toggleBtn.TextSize = 11
+    toggleBtn.Parent = toggleFrame
     
     local btnCorner = Instance.new("UICorner")
     btnCorner.CornerRadius = UDim.new(0, 4)
-    btnCorner.Parent = btn
+    btnCorner.Parent = toggleBtn
     
-    btn.MouseButton1Click:Connect(function()
-        self.states[stateKey] = not self.states[stateKey]
-        if self.states[stateKey] then
-            btn.BackgroundColor3 = CORES.success
-            btn.Text = "ON"
+    toggleBtn.MouseButton1Click:Connect(function()
+        espStates[stateKey] = not espStates[stateKey]
+        if espStates[stateKey] then
+            toggleBtn.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+            toggleBtn.Text = "ON"
         else
-            btn.BackgroundColor3 = CORES.danger
-            btn.Text = "OFF"
+            toggleBtn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+            toggleBtn.Text = "OFF"
         end
     end)
 end
 
-function ESPBeta:GetRole(player)
+criarToggleESP(45, "MURDER", CORES_ESP.Murder, "murder")
+criarToggleESP(80, "XERIFE", CORES_ESP.Sheriff, "sheriff")
+criarToggleESP(115, "INOCENTE", CORES_ESP.Innocent, "innocent")
+criarToggleESP(150, "ARMA DROPADA", CORES_ESP.GunDrop, "gun")
+
+-- Funções do ESP
+local function getRole(player)
     local char = player.Character
     local bp = player:FindFirstChild("Backpack")
     
@@ -582,7 +521,7 @@ function ESPBeta:GetRole(player)
     return "Innocent"
 end
 
-function ESPBeta:ApplyHighlight(obj, color, name)
+local function applyHighlight(obj, color, name)
     local h = obj:FindFirstChild(name)
     if not h then
         h = Instance.new("Highlight")
@@ -594,60 +533,44 @@ function ESPBeta:ApplyHighlight(obj, color, name)
     h.FillTransparency = 0.5
 end
 
-function ESPBeta:StartLoop()
-    spawn(function()
-        while true do
-            -- ESP Jogadores
-            for _, player in pairs(Players:GetPlayers()) do
-                if player ~= LP and player.Character then
-                    local role = self:GetRole(player)
-                    local stateKey = role:lower()
-                    
-                    if self.states[stateKey] then
-                        self:ApplyHighlight(player.Character, CORES[role:lower()], "NCHUB_PlayerESP")
+-- Loop do ESP
+spawn(function()
+    while true do
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= LP and player.Character then
+                local role = getRole(player)
+                local stateKey = role:lower()
+                
+                if espStates[stateKey] then
+                    applyHighlight(player.Character, CORES_ESP[role], "NCHUB_PlayerESP")
+                else
+                    local old = player.Character:FindFirstChild("NCHUB_PlayerESP")
+                    if old then old:Destroy() end
+                end
+            end
+        end
+
+        if espStates.gun then
+            for _, obj in pairs(workspace:GetDescendants()) do
+                if obj:IsA("Tool") and (obj.Name:lower():find("gun") or obj.Name:lower():find("revolver")) then
+                    if not obj:FindFirstAncestorOfClass("Model") or not Players:GetPlayerFromCharacter(obj.Parent) then
+                        applyHighlight(obj, CORES_ESP.GunDrop, "NCHUB_GunESP")
                     else
-                        local old = player.Character:FindFirstChild("NCHUB_PlayerESP")
+                        local old = obj:FindFirstChild("NCHUB_GunESP")
                         if old then old:Destroy() end
                     end
                 end
             end
-
-            -- ESP Armas
-            if self.states.gun then
-                for _, obj in pairs(Workspace:GetDescendants()) do
-                    if obj:IsA("Tool") and (obj.Name:lower():find("gun") or obj.Name:lower():find("revolver")) then
-                        if not obj:FindFirstAncestorOfClass("Model") or not Players:GetPlayerFromCharacter(obj.Parent) then
-                            self:ApplyHighlight(obj, CORES.gun, "NCHUB_GunESP")
-                        else
-                            local old = obj:FindFirstChild("NCHUB_GunESP")
-                            if old then old:Destroy() end
-                        end
-                    end
-                end
-            else
-                for _, obj in pairs(Workspace:GetDescendants()) do
-                    local old = obj:FindFirstChild("NCHUB_GunESP")
-                    if old then old:Destroy() end
-                end
+        else
+            for _, obj in pairs(workspace:GetDescendants()) do
+                local old = obj:FindFirstChild("NCHUB_GunESP")
+                if old then old:Destroy() end
             end
-            
-            task.wait(0.5)
         end
-    end)
-end
-
--- ============================================
--- INICIALIZAR TUDO
--- ============================================
-
--- Remover placeholder antigo
-for _, child in pairs(contentArea:GetChildren()) do
-    child:Destroy()
-end
-
--- Criar instâncias profissionais
-local farm = FarmAFK.new()
-local esp = ESPBeta.new()
+        
+        task.wait(0.5)
+    end
+end)
 
 -- Atualizar canvas size
 local function UpdateCanvas()
@@ -662,4 +585,5 @@ end
 
 UpdateCanvas()
 
-print("✅ NCHUB carregado com implementações profissionais!")
+print("✅ NCHUB carregado com Auto Farm e ESP!")
+print("🎮 Pressione T para ligar/desligar o Auto Farm")
