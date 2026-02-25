@@ -1,4 +1,4 @@
--- NCHUB - Versão Final (Design com Abas + ESP Perfeito)
+-- NCHUB - Versão Final (Design com Abas + Autofarm Original)
 -- ID: 136836598337495
 
 local TweenService = game:GetService("TweenService")
@@ -363,7 +363,7 @@ Instance.new("UICorner", greenPreview).CornerRadius = UDim.new(0, 6)
 
 -- ==================== VARIÁVEIS GLOBAIS ====================
 
--- Autofarm
+-- Autofarm (usando seu script original)
 local isRunning = false
 local velocidade = 30
 local Char = LP.Character or LP.CharacterAdded:Wait()
@@ -378,7 +378,7 @@ local killing = false
 local espEnabled = false
 local espCache = {}
 
--- ==================== FUNÇÕES DO AUTOFARM (ORIGINAL - SEM ANTI-CHEAT) ====================
+-- ==================== SEU SCRIPT DE AUTOFARM ORIGINAL ====================
 
 local function encontrarMoedaMaisProxima()
     local mapa = nil
@@ -398,7 +398,8 @@ local function encontrarMoedaMaisProxima()
     local menorDistancia = math.huge
     
     for _, moeda in ipairs(container:GetChildren()) do
-        if moeda:IsA("Part") and moeda.Transparency < 1 then
+        local visual = moeda:FindFirstChild("CoinVisual")
+        if visual and not visual:GetAttribute("Collected") then
             local distancia = (HRP.Position - moeda.Position).Magnitude
             if distancia < menorDistancia then
                 moedaMaisProxima = moeda
@@ -413,8 +414,21 @@ end
 local function irAteMoeda(moeda)
     if not moeda or not HRP or not Humanoid then return end
     
-    HRP.CFrame = moeda.CFrame
-    task.wait(0.1)
+    Humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+    
+    local distancia = (HRP.Position - moeda.Position).Magnitude
+    local tempoViagem = distancia / velocidade
+    
+    local tween = TweenService:Create(
+        HRP, 
+        TweenInfo.new(tempoViagem, Enum.EasingStyle.Linear),
+        {CFrame = moeda.CFrame}
+    )
+    
+    tween:Play()
+    tween.Completed:Wait()
+    
+    Humanoid:ChangeState(Enum.HumanoidStateType.Running)
 end
 
 -- ==================== FUNÇÕES DO KILL ALL ====================
@@ -588,7 +602,7 @@ visualTab.MouseButton1Click:Connect(function() selecionarAba("visual") end)
 
 -- ==================== LÓGICA DOS BOTÕES ====================
 
--- Autofarm
+-- Autofarm (usando seu sistema)
 farmButton.MouseButton1Click:Connect(function()
     isRunning = not isRunning
     
@@ -707,9 +721,8 @@ UserInputService.InputBegan:Connect(function(input)
     end
 end)
 
--- ==================== LOOPS ====================
+-- ==================== LOOP DO AUTOFARM (SEU SCRIPT ORIGINAL) ====================
 
--- Loop do Autofarm (ORIGINAL - SEM ANTI-CHEAT)
 spawn(function()
     while true do
         if isRunning then
@@ -717,7 +730,13 @@ spawn(function()
             
             if moeda then
                 irAteMoeda(moeda)
-                task.wait(0.1)
+                
+                local visual = moeda:FindFirstChild("CoinVisual")
+                if visual then
+                    repeat
+                        task.wait(0.1)
+                    until not visual.Parent or visual:GetAttribute("Collected")
+                end
             else
                 task.wait(0.5)
             end
@@ -836,6 +855,6 @@ LP.CharacterAdded:Connect(function(novoChar)
 end)
 
 print("🚀 NCHUB Carregado!")
-print("📦 MAIN - Autofarm (T) + Kill All")
+print("📦 MAIN - Autofarm ORIGINAL (T) + Kill All")
 print("⚙️ CONFIG - Ajuste de velocidade")
 print("👁️ VISUAL - ESP (INSERT) - TEMPO REAL")
