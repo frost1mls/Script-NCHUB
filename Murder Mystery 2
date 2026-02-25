@@ -1,9 +1,10 @@
--- NCHUB - Versão Final Corrigida (Botões + Logo Circular)
+-- NCHUB - Versão Final com 3 Abas (Main, ⚙️, Visual)
 -- ID: 136836598337495
 
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 local LP = Players.LocalPlayer
 
 local screenGui = Instance.new("ScreenGui")
@@ -33,8 +34,8 @@ loadingText.Parent = loadingFrame
 -- [GUI PRINCIPAL]
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 420, 0, 340)
-mainFrame.Position = UDim2.new(0.5, -210, 0.5, -170)
+mainFrame.Size = UDim2.new(0, 500, 0, 380)
+mainFrame.Position = UDim2.new(0.5, -250, 0.5, -190)
 mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
 mainFrame.ClipsDescendants = true
 mainFrame.Visible = false 
@@ -101,152 +102,237 @@ local minMaxBtn, minMaxIcon = CreateTopBtn(UDim2.new(0, 30, 0, 0), "806185218584
 local closeBtn, closeIcon = CreateTopBtn(UDim2.new(0, 60, 0, 0), "91221634288964", buttonContainer)
 local helpBtn, helpIcon = CreateTopBtn(UDim2.new(0, 90, 0, 0), "95556025403965", buttonContainer)
 
--- [FUNÇÕES DRAG]
-local function MakeDraggable(obj, dragObj)
-    local dragging, dragStart, startPos
-    obj.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true 
-            dragStart = input.Position 
-            startPos = dragObj.Position
-        end
-    end)
-    
-    UserInputService.InputChanged:Connect(function(input)
-        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            local delta = input.Position - dragStart
-            dragObj.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-        end
-    end)
-    
-    obj.InputEnded:Connect(function() 
-        dragging = false 
-    end)
-end
+-- [SISTEMA DE ABAS]
+local tabContainer = Instance.new("Frame")
+tabContainer.Size = UDim2.new(1, -20, 0, 35)
+tabContainer.Position = UDim2.new(0, 10, 0, 50)
+tabContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 38)
+tabContainer.Parent = mainFrame
+Instance.new("UICorner", tabContainer).CornerRadius = UDim.new(0, 8)
 
-MakeDraggable(topBar, mainFrame)
+-- Botões das abas
+local mainTab = Instance.new("TextButton")
+mainTab.Size = UDim2.new(0, 110, 0, 25)
+mainTab.Position = UDim2.new(0, 10, 0.5, -12.5)
+mainTab.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+mainTab.BackgroundTransparency = 0.9
+mainTab.Text = "📦 MAIN"
+mainTab.TextColor3 = Color3.fromRGB(255, 255, 255)
+mainTab.Font = Enum.Font.GothamBold
+mainTab.TextSize = 14
+mainTab.Parent = tabContainer
+Instance.new("UICorner", mainTab).CornerRadius = UDim.new(0, 6)
 
--- [LÓGICA DOS BOTÕES]
-closeBtn.MouseButton1Click:Connect(function() 
-    screenGui:Destroy() 
-end)
+local configTab = Instance.new("TextButton")
+configTab.Size = UDim2.new(0, 110, 0, 25)
+configTab.Position = UDim2.new(0, 130, 0.5, -12.5)
+configTab.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+configTab.BackgroundTransparency = 0.9
+configTab.Text = "⚙️ CONFIG"
+configTab.TextColor3 = Color3.fromRGB(255, 255, 255)
+configTab.Font = Enum.Font.GothamBold
+configTab.TextSize = 14
+configTab.Parent = tabContainer
+Instance.new("UICorner", configTab).CornerRadius = UDim.new(0, 6)
 
-local minimized = false
-minMaxBtn.MouseButton1Click:Connect(function()
-    minimized = not minimized
-    if minimized then
-        mainFrame:TweenSize(UDim2.new(0, 420, 0, 45), "Out", "Quad", 0.2, true)
-        minMaxIcon.Image = "rbxassetid://90771774993802"
-    else
-        mainFrame:TweenSize(UDim2.new(0, 420, 0, 340), "Out", "Quad", 0.2, true)
-        minMaxIcon.Image = "rbxassetid://80618521858488"
-    end
-end)
+local visualTab = Instance.new("TextButton")
+visualTab.Size = UDim2.new(0, 110, 0, 25)
+visualTab.Position = UDim2.new(0, 250, 0.5, -12.5)
+visualTab.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+visualTab.BackgroundTransparency = 0.9
+visualTab.Text = "👁️ VISUAL"
+visualTab.TextColor3 = Color3.fromRGB(255, 255, 255)
+visualTab.Font = Enum.Font.GothamBold
+visualTab.TextSize = 14
+visualTab.Parent = tabContainer
+Instance.new("UICorner", visualTab).CornerRadius = UDim.new(0, 6)
 
--- [INTRO + BALÃO PÓS-INTRO]
-task.wait(2)
-loadingFrame:TweenPosition(UDim2.new(0.5, -75, 1.5, 0), "Out", "Quad", 0.5, true)
-task.wait(0.5)
-loadingFrame:Destroy()
+-- [CONTAINER DAS ABAS]
+local contentContainer = Instance.new("Frame")
+contentContainer.Size = UDim2.new(1, -20, 1, -100)
+contentContainer.Position = UDim2.new(0, 10, 0, 90)
+contentContainer.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+contentContainer.Parent = mainFrame
+Instance.new("UICorner", contentContainer).CornerRadius = UDim.new(0, 12)
 
-local toggleBtn = Instance.new("ImageButton")
-toggleBtn.Name = "ToggleButton"
-toggleBtn.Size = UDim2.new(0, 60, 0, 60)
-toggleBtn.Position = UDim2.new(0, 15, 0.5, -30)
-toggleBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-toggleBtn.BackgroundTransparency = 0.1
-toggleBtn.Image = "rbxassetid://136836598337495"
-toggleBtn.ScaleType = Enum.ScaleType.Fit
-toggleBtn.Parent = screenGui
-Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(1, 0)
-Instance.new("UIStroke", toggleBtn).Thickness = 2.5
+-- ==================== ABA MAIN (AUTOFARM) ====================
 
-MakeDraggable(toggleBtn, toggleBtn)
-toggleBtn.MouseButton1Click:Connect(function() 
-    mainFrame.Visible = not mainFrame.Visible 
-end)
-
-mainFrame.Visible = true
-
--- ==================== AUTOFARM MM2 (DENTRO DO HUB) ====================
-
--- Variáveis do autofarm
-local isRunning = false
-local velocidade = 30
-local Char = LP.Character or LP.CharacterAdded:Wait()
-local HRP = Char:WaitForChild("HumanoidRootPart")
-local Humanoid = Char:WaitForChild("Humanoid")
-
--- Criar frame do autofarm DENTRO do mainFrame
-local farmFrame = Instance.new("Frame")
-farmFrame.Name = "AutoFarmFrame"
-farmFrame.Size = UDim2.new(1, -20, 1, -60)
-farmFrame.Position = UDim2.new(0, 10, 0, 50)
-farmFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-farmFrame.BackgroundTransparency = 0.2
-farmFrame.Parent = mainFrame
-Instance.new("UICorner", farmFrame).CornerRadius = UDim.new(0, 12)
+local mainFrame_Content = Instance.new("Frame")
+mainFrame_Content.Size = UDim2.new(1, -20, 1, -20)
+mainFrame_Content.Position = UDim2.new(0, 10, 0, 10)
+mainFrame_Content.BackgroundTransparency = 1
+mainFrame_Content.Parent = contentContainer
+mainFrame_Content.Visible = true
 
 -- Título
-local farmTitle = Instance.new("TextLabel")
-farmTitle.Size = UDim2.new(1, 0, 0, 30)
-farmTitle.Position = UDim2.new(0, 0, 0, 10)
-farmTitle.BackgroundTransparency = 1
-farmTitle.Text = "⚙️ AUTOFARM MM2"
-farmTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-farmTitle.Font = Enum.Font.GothamBold
-farmTitle.TextSize = 18
-farmTitle.Parent = farmFrame
+local mainTitle = Instance.new("TextLabel")
+mainTitle.Size = UDim2.new(1, 0, 0, 35)
+mainTitle.BackgroundTransparency = 1
+mainTitle.Text = "🤖 AUTOFARM MM2"
+mainTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+mainTitle.Font = Enum.Font.GothamBold
+mainTitle.TextSize = 22
+mainTitle.Parent = mainFrame_Content
 
 -- Status
-local statusText = Instance.new("TextLabel")
-statusText.Size = UDim2.new(1, -20, 0, 35)
-statusText.Position = UDim2.new(0, 10, 0, 45)
-statusText.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-statusText.Text = "🔴 DESLIGADO"
-statusText.TextColor3 = Color3.fromRGB(255, 100, 100)
-statusText.Font = Enum.Font.GothamBold
-statusText.TextSize = 16
-statusText.Parent = farmFrame
-Instance.new("UICorner", statusText).CornerRadius = UDim.new(0, 8)
+local farmStatus = Instance.new("TextLabel")
+farmStatus.Size = UDim2.new(1, 0, 0, 40)
+farmStatus.Position = UDim2.new(0, 0, 0, 40)
+farmStatus.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+farmStatus.Text = "🔴 DESLIGADO"
+farmStatus.TextColor3 = Color3.fromRGB(255, 100, 100)
+farmStatus.Font = Enum.Font.GothamBold
+farmStatus.TextSize = 18
+farmStatus.Parent = mainFrame_Content
+Instance.new("UICorner", farmStatus).CornerRadius = UDim.new(0, 8)
 
 -- Botão liga/desliga
 local farmButton = Instance.new("TextButton")
-farmButton.Size = UDim2.new(1, -20, 0, 40)
-farmButton.Position = UDim2.new(0, 10, 0, 90)
+farmButton.Size = UDim2.new(1, 0, 0, 45)
+farmButton.Position = UDim2.new(0, 0, 0, 90)
 farmButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
 farmButton.Text = "LIGAR (T)"
 farmButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 farmButton.Font = Enum.Font.GothamBold
 farmButton.TextSize = 18
-farmButton.Parent = farmFrame
+farmButton.Parent = mainFrame_Content
 Instance.new("UICorner", farmButton).CornerRadius = UDim.new(0, 8)
+
+-- ==================== ABA CONFIG (⚙️) ====================
+
+local configFrame_Content = Instance.new("Frame")
+configFrame_Content.Size = UDim2.new(1, -20, 1, -20)
+configFrame_Content.Position = UDim2.new(0, 10, 0, 10)
+configFrame_Content.BackgroundTransparency = 1
+configFrame_Content.Parent = contentContainer
+configFrame_Content.Visible = false
+
+-- Título
+local configTitle = Instance.new("TextLabel")
+configTitle.Size = UDim2.new(1, 0, 0, 35)
+configTitle.BackgroundTransparency = 1
+configTitle.Text = "⚙️ CONFIGURAÇÕES"
+configTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+configTitle.Font = Enum.Font.GothamBold
+configTitle.TextSize = 22
+configTitle.Parent = configFrame_Content
 
 -- Velocidade
 local speedLabel = Instance.new("TextLabel")
-speedLabel.Size = UDim2.new(0.4, -5, 0, 30)
-speedLabel.Position = UDim2.new(0, 10, 0, 140)
+speedLabel.Size = UDim2.new(0.4, -5, 0, 35)
+speedLabel.Position = UDim2.new(0, 0, 0, 50)
 speedLabel.BackgroundTransparency = 1
 speedLabel.Text = "Velocidade:"
 speedLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
 speedLabel.Font = Enum.Font.Gotham
-speedLabel.TextSize = 14
+speedLabel.TextSize = 16
 speedLabel.TextXAlignment = Enum.TextXAlignment.Left
-speedLabel.Parent = farmFrame
+speedLabel.Parent = configFrame_Content
 
 local speedBox = Instance.new("TextBox")
-speedBox.Size = UDim2.new(0.6, -15, 0, 30)
-speedBox.Position = UDim2.new(0.4, 5, 0, 140)
-speedBox.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+speedBox.Size = UDim2.new(0.6, -10, 0, 35)
+speedBox.Position = UDim2.new(0.4, 5, 0, 50)
+speedBox.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
 speedBox.Text = "30"
 speedBox.TextColor3 = Color3.fromRGB(255, 255, 255)
 speedBox.Font = Enum.Font.Gotham
-speedBox.TextSize = 14
+speedBox.TextSize = 16
 speedBox.PlaceholderText = "30"
-speedBox.Parent = farmFrame
-Instance.new("UICorner", speedBox).CornerRadius = UDim.new(0, 6)
+speedBox.Parent = configFrame_Content
+Instance.new("UICorner", speedBox).CornerRadius = UDim.new(0, 8)
 
--- ==================== FUNÇÕES DO AUTOFARM ====================
+-- ==================== ABA VISUAL (ESP) ====================
+
+local visualFrame_Content = Instance.new("Frame")
+visualFrame_Content.Size = UDim2.new(1, -20, 1, -20)
+visualFrame_Content.Position = UDim2.new(0, 10, 0, 10)
+visualFrame_Content.BackgroundTransparency = 1
+visualFrame_Content.Parent = contentContainer
+visualFrame_Content.Visible = false
+
+-- Título
+local visualTitle = Instance.new("TextLabel")
+visualTitle.Size = UDim2.new(1, 0, 0, 35)
+visualTitle.BackgroundTransparency = 1
+visualTitle.Text = "👁️ VISUAL ESP"
+visualTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+visualTitle.Font = Enum.Font.GothamBold
+visualTitle.TextSize = 22
+visualTitle.Parent = visualFrame_Content
+
+-- Status ESP
+local espStatus = Instance.new("TextLabel")
+espStatus.Size = UDim2.new(1, 0, 0, 40)
+espStatus.Position = UDim2.new(0, 0, 0, 40)
+espStatus.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+espStatus.Text = "🔴 ESP OFF"
+espStatus.TextColor3 = Color3.fromRGB(255, 100, 100)
+espStatus.Font = Enum.Font.GothamBold
+espStatus.TextSize = 18
+espStatus.Parent = visualFrame_Content
+Instance.new("UICorner", espStatus).CornerRadius = UDim.new(0, 8)
+
+-- Botão ESP
+local espButton = Instance.new("TextButton")
+espButton.Size = UDim2.new(1, 0, 0, 45)
+espButton.Position = UDim2.new(0, 0, 0, 90)
+espButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+espButton.Text = "LIGAR ESP (INSERT)"
+espButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+espButton.Font = Enum.Font.GothamBold
+espButton.TextSize = 18
+espButton.Parent = visualFrame_Content
+Instance.new("UICorner", espButton).CornerRadius = UDim.new(0, 8)
+
+-- Info das cores
+local infoLabel = Instance.new("TextLabel")
+infoLabel.Size = UDim2.new(1, 0, 0, 80)
+infoLabel.Position = UDim2.new(0, 0, 0, 145)
+infoLabel.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+infoLabel.Text = "🔴 Murderer\n🔵 Sheriff\n🟢 Innocent"
+infoLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+infoLabel.Font = Enum.Font.Gotham
+infoLabel.TextSize = 14
+infoLabel.TextWrapped = true
+infoLabel.Parent = visualFrame_Content
+Instance.new("UICorner", infoLabel).CornerRadius = UDim.new(0, 8)
+
+-- ==================== LÓGICA DAS ABAS ====================
+
+local function selecionarAba(aba)
+    -- Resetar cores dos botões
+    mainTab.BackgroundTransparency = 0.9
+    configTab.BackgroundTransparency = 0.9
+    visualTab.BackgroundTransparency = 0.9
+    
+    -- Esconder todos os conteúdos
+    mainFrame_Content.Visible = false
+    configFrame_Content.Visible = false
+    visualFrame_Content.Visible = false
+    
+    if aba == "main" then
+        mainTab.BackgroundTransparency = 0.5
+        mainFrame_Content.Visible = true
+    elseif aba == "config" then
+        configTab.BackgroundTransparency = 0.5
+        configFrame_Content.Visible = true
+    elseif aba == "visual" then
+        visualTab.BackgroundTransparency = 0.5
+        visualFrame_Content.Visible = true
+    end
+end
+
+mainTab.MouseButton1Click:Connect(function() selecionarAba("main") end)
+configTab.MouseButton1Click:Connect(function() selecionarAba("config") end)
+visualTab.MouseButton1Click:Connect(function() selecionarAba("visual") end)
+
+-- ==================== AUTOFARM (MAIN) ====================
+
+local isRunning = false
+local velocidade = 30
+local Char = LP.Character or LP.CharacterAdded:Wait()
+local HRP = Char:WaitForChild("HumanoidRootPart")
+local Humanoid = Char:WaitForChild("Humanoid")
 
 local function encontrarMoedaMaisProxima()
     local mapa = nil
@@ -299,30 +385,29 @@ local function irAteMoeda(moeda)
     Humanoid:ChangeState(Enum.HumanoidStateType.Running)
 end
 
-local function atualizarInterface()
+local function atualizarFarmUI()
     if isRunning then
-        statusText.Text = "🟢 LIGADO"
-        statusText.TextColor3 = Color3.fromRGB(100, 255, 100)
+        farmStatus.Text = "🟢 LIGADO"
+        farmStatus.TextColor3 = Color3.fromRGB(100, 255, 100)
         farmButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
         farmButton.Text = "DESLIGAR (T)"
     else
-        statusText.Text = "🔴 DESLIGADO"
-        statusText.TextColor3 = Color3.fromRGB(255, 100, 100)
+        farmStatus.Text = "🔴 DESLIGADO"
+        farmStatus.TextColor3 = Color3.fromRGB(255, 100, 100)
         farmButton.BackgroundColor3 = Color3.fromRGB(50, 255, 50)
         farmButton.Text = "LIGAR (T)"
     end
 end
 
--- Eventos
 farmButton.MouseButton1Click:Connect(function()
     isRunning = not isRunning
-    atualizarInterface()
+    atualizarFarmUI()
 end)
 
 UserInputService.InputBegan:Connect(function(input)
     if input.KeyCode == Enum.KeyCode.T then
         isRunning = not isRunning
-        atualizarInterface()
+        atualizarFarmUI()
     end
 end)
 
@@ -335,7 +420,7 @@ speedBox.FocusLost:Connect(function()
     end
 end)
 
--- Loop principal
+-- Loop do autofarm
 spawn(function()
     while true do
         if isRunning then
@@ -359,6 +444,237 @@ spawn(function()
     end
 end)
 
+-- ==================== ESP (VISUAL) ====================
+
+local espEnabled = false
+local espCache = {}
+
+local function getPlayerRole(target)
+    if not target.Character then return "innocent" end
+    
+    if target.Character:FindFirstChild("Knife") or 
+       (target.Backpack and target.Backpack:FindFirstChild("Knife")) then
+        return "murderer"
+    end
+    
+    if target.Character:FindFirstChild("Gun") or 
+       (target.Backpack and target.Backpack:FindFirstChild("Gun")) then
+        return "sheriff"
+    end
+    
+    return "innocent"
+end
+
+local function getRoleColor(role)
+    if role == "murderer" then
+        return Color3.fromRGB(255, 80, 80)
+    elseif role == "sheriff" then
+        return Color3.fromRGB(80, 80, 255)
+    else
+        return Color3.fromRGB(120, 255, 120)
+    end
+end
+
+local function updateESP(target)
+    if not espEnabled or not espCache[target] or not target.Character or not target.Character:FindFirstChild("Head") then 
+        return 
+    end
+    
+    pcall(function()
+        local role = getPlayerRole(target)
+        local roleColor = getRoleColor(role)
+        
+        if espCache[target].highlight then
+            espCache[target].highlight.FillColor = roleColor
+            espCache[target].highlight.OutlineColor = roleColor
+        end
+        
+        if espCache[target].billboard then
+            local nameLabel = espCache[target].billboard:FindFirstChild("NameLabel")
+            local roleLabel = espCache[target].billboard:FindFirstChild("RoleLabel")
+            
+            if nameLabel then
+                nameLabel.TextColor3 = roleColor
+            end
+            if roleLabel then
+                roleLabel.Text = string.upper(role)
+                roleLabel.TextColor3 = roleColor
+            end
+        end
+    end)
+end
+
+local function createESP(target)
+    if espCache[target] or not target.Character then return end
+    pcall(function()
+        if not target.Character:FindFirstChild("Head") then return end
+        
+        local role = getPlayerRole(target)
+        local roleColor = getRoleColor(role)
+        
+        local highlight = Instance.new("Highlight", target.Character)
+        highlight.FillColor = roleColor
+        highlight.OutlineColor = roleColor
+        highlight.FillTransparency = 0.5
+        
+        local billboardGui = Instance.new("BillboardGui", target.Character.Head)
+        billboardGui.AlwaysOnTop = true
+        billboardGui.Size = UDim2.new(0, 200, 0, 70)
+        billboardGui.StudsOffset = Vector3.new(0, 3, 0)
+        
+        local nameLabel = Instance.new("TextLabel", billboardGui)
+        nameLabel.Name = "NameLabel"
+        nameLabel.Size = UDim2.new(1, 0, 0.6, 0)
+        nameLabel.BackgroundTransparency = 1
+        nameLabel.Text = target.Name
+        nameLabel.TextColor3 = roleColor
+        nameLabel.Font = Enum.Font.GothamBold
+        nameLabel.TextSize = 18
+        
+        local roleLabel = Instance.new("TextLabel", billboardGui)
+        roleLabel.Name = "RoleLabel"
+        roleLabel.Size = UDim2.new(1, 0, 0.4, 0)
+        roleLabel.Position = UDim2.new(0, 0, 0.6, 0)
+        roleLabel.BackgroundTransparency = 1
+        roleLabel.Text = string.upper(role)
+        roleLabel.TextColor3 = roleColor
+        roleLabel.Font = Enum.Font.GothamBold
+        roleLabel.TextSize = 14
+        
+        espCache[target] = {
+            highlight = highlight,
+            billboard = billboardGui
+        }
+    end)
+end
+
+local function toggleESP()
+    espEnabled = not espEnabled
+    
+    if espEnabled then
+        espStatus.Text = "🟢 ESP ON"
+        espStatus.TextColor3 = Color3.fromRGB(100, 255, 100)
+        espButton.BackgroundColor3 = Color3.fromRGB(50, 255, 50)
+        espButton.Text = "DESLIGAR ESP (INSERT)"
+    else
+        espStatus.Text = "🔴 ESP OFF"
+        espStatus.TextColor3 = Color3.fromRGB(255, 100, 100)
+        espButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+        espButton.Text = "LIGAR ESP (INSERT)"
+        
+        for _, cache in pairs(espCache) do
+            pcall(function()
+                if cache.highlight then cache.highlight:Destroy() end
+                if cache.billboard then cache.billboard:Destroy() end
+            end)
+        end
+        espCache = {}
+    end
+end
+
+espButton.MouseButton1Click:Connect(toggleESP)
+
+UserInputService.InputBegan:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.Insert then
+        toggleESP()
+    end
+end)
+
+RunService.RenderStepped:Connect(function()
+    if espEnabled then
+        for _, otherPlayer in pairs(Players:GetPlayers()) do
+            if otherPlayer ~= LP then
+                if not espCache[otherPlayer] then
+                    createESP(otherPlayer)
+                else
+                    updateESP(otherPlayer)
+                end
+            end
+        end
+    end
+end)
+
+Players.PlayerRemoving:Connect(function(target)
+    if espCache[target] then
+        pcall(function()
+            if espCache[target].highlight then
+                espCache[target].highlight:Destroy()
+            end
+            if espCache[target].billboard then
+                espCache[target].billboard:Destroy()
+            end
+        end)
+        espCache[target] = nil
+    end
+end)
+
+-- ==================== FUNÇÕES DA INTERFACE ====================
+
+local function MakeDraggable(obj, dragObj)
+    local dragging, dragStart, startPos
+    obj.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = dragObj.Position
+        end
+    end)
+    
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position - dragStart
+            dragObj.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+    
+    obj.InputEnded:Connect(function() 
+        dragging = false 
+    end)
+end
+
+MakeDraggable(topBar, mainFrame)
+
+closeBtn.MouseButton1Click:Connect(function() 
+    screenGui:Destroy() 
+end)
+
+local minimized = false
+minMaxBtn.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    if minimized then
+        mainFrame:TweenSize(UDim2.new(0, 500, 0, 45), "Out", "Quad", 0.2, true)
+        minMaxIcon.Image = "rbxassetid://90771774993802"
+    else
+        mainFrame:TweenSize(UDim2.new(0, 500, 0, 380), "Out", "Quad", 0.2, true)
+        minMaxIcon.Image = "rbxassetid://80618521858488"
+    end
+end)
+
+-- [INTRO + BOTÃO TOGGLE]
+task.wait(2)
+loadingFrame:TweenPosition(UDim2.new(0.5, -75, 1.5, 0), "Out", "Quad", 0.5, true)
+task.wait(0.5)
+loadingFrame:Destroy()
+
+local toggleBtn = Instance.new("ImageButton")
+toggleBtn.Name = "ToggleButton"
+toggleBtn.Size = UDim2.new(0, 60, 0, 60)
+toggleBtn.Position = UDim2.new(0, 15, 0.5, -30)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+toggleBtn.BackgroundTransparency = 0.1
+toggleBtn.Image = "rbxassetid://136836598337495"
+toggleBtn.ScaleType = Enum.ScaleType.Fit
+toggleBtn.Parent = screenGui
+Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(1, 0)
+Instance.new("UIStroke", toggleBtn).Thickness = 2.5
+
+MakeDraggable(toggleBtn, toggleBtn)
+toggleBtn.MouseButton1Click:Connect(function() 
+    mainFrame.Visible = not mainFrame.Visible 
+end)
+
+mainFrame.Visible = true
+
 -- Atualizar personagem
 LP.CharacterAdded:Connect(function(novoChar)
     Char = novoChar
@@ -366,4 +682,7 @@ LP.CharacterAdded:Connect(function(novoChar)
     Humanoid = Char:WaitForChild("Humanoid")
 end)
 
-print("🚀 NCHUB + Autofarm carregado! Pressione T para ligar/desligar")
+print("🚀 NCHUB Carregado!")
+print("📦 MAIN - Autofarm (Tecla T)")
+print("⚙️ CONFIG - Ajuste de velocidade")
+print("👁️ VISUAL - ESP (Tecla INSERT)")
